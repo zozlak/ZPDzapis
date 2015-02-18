@@ -7,6 +7,7 @@
 #' @param zrodloDanychODBC nazwa zrodla danych ODBC, ktorego nalezy uzyc
 #' @return [data.frame] zapisane elementy skali
 #' @export
+#' @import RODBC
 #' @import RODBCext
 edytuj_skale = function(
 	idSkali, 
