@@ -1,6 +1,6 @@
 Package: ZPDzapis
 Title: Funkcje zapisu danych do bazy ZPD
-Version: 0.0.0.9000
+Version: 0.0.0.9100
 Authors@R: person("Mateusz", "Zoltak", , "zozlak@zozlak.org", role = c("aut", "cre"))
 Description: Funkcje zapisu danych do bazy ZPD
 Depends: 

@@ -1,8 +1,7 @@
 #' @title Tworzy w bazie nowa skale i zwraca jej id_skali
 #' @description
 #' _
-#' @param nazwa nazwa skali (zwyczajowo w formacie "ZESPOL;EGZ;LATA", np. "paou;s;2002-2011" lub "ewd;gh_h;2012")
-#' @param opis bardziej dokladny opis skali (opcjonalny, mozna ustawic na "")
+#' @param opis opis skali (zwyczajowo w formacie "ZESPOL;EGZ;LATA", np. "paou;s;2002-2011" lub "ewd;gh_h;2012")
 #' @param rodzaj rodzaj skali (ewd/zrównywanie/ktt)
 #' @param doPrezentacji czy skala ma być oznaczona jako przeznaczona do prezentacji
 #' @param idTestow wektor id testów, z którymi ma być powiązana skala
@@ -11,7 +10,6 @@
 #' @export
 #' @import RODBCext
 stworz_skale = function(
-	nazwa, 
 	opis, 
 	rodzaj,
 	doPrezentacji,
@@ -19,8 +17,7 @@ stworz_skale = function(
 	zrodloDanychODBC = 'EWD'
 ){
   stopifnot(
-    is.vector(nazwa), is.character(nazwa), length(nazwa) == 1, !is.na(nazwa), nazwa != '', 
-    is.vector(opis), is.character(opis), length(opis) == 1, !is.na(opis),
+    is.vector(opis), is.character(opis), length(opis) == 1, !is.na(nazwa), opis != '', 
     is.vector(rodzaj), is.character(rodzaj), length(rodzaj) == 1, !is.na(rodzaj),
     is.vector(doPrezentacji), is.logical(doPrezentacji), length(doPrezentacji) == 1, !is.na(doPrezentacji),
     is.vector(idTestow), is.numeric(idTestow),
@@ -33,7 +30,7 @@ stworz_skale = function(
   
   idTestow = na.exclude(idTestow)
   stopifnot(
-    ! nazwa %in% .sqlQuery(P, "SELECT DISTINCT nazwa FROM skale")[, 1],
+    ! opis %in% .sqlQuery(P, "SELECT DISTINCT opis FROM skale")[, 1],
     rodzaj %in% .sqlQuery(P, "SELECT rodzaj_skali FROM sl_rodzaje_skal")[, 1],
     length(idTestow) > 0,
     all(idTestow %in% .sqlQuery(P, "SELECT id_testu FROM testy")[, 1])
@@ -43,8 +40,8 @@ stworz_skale = function(
 	.sqlQuery(P, "BEGIN")
 		
   idSkali = .sqlQuery(P, "SELECT nextval('skale_id_skali_seq')")[1, 1]
-  zap = "INSERT INTO skale (id_skali, opis, nazwa, rodzaj_skali, do_prezentacji) VALUES (?, ?, ?, ?, ?)"
-  .sqlQuery(P, zap, list(idSkali, opis, nazwa, rodzaj, doPrezentacji))
+  zap = "INSERT INTO skale (id_skali, opis, rodzaj_skali, do_prezentacji) VALUES (?, ?, ?, ?, ?)"
+  .sqlQuery(P, zap, list(idSkali, opis, rodzaj, doPrezentacji))
   zap = "INSERT INTO skale_testy (id_skali, id_testu) VALUES (?, ?)"
   .sqlQuery(P, zap, list(rep(idSkali, length(idTestow)), idTestow))
   
