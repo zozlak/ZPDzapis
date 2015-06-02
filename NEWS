@@ -1,12 +1,32 @@
 --------------------
-Zmiany w ZPDzapis 0.0.0.9000
+Zmiany w ZPDzapis 0.0.0.9200 (02.06.2015)
+
+Naprawione błędy:
+- Poprawki warunków w stopifnot() w stworz_skale().
+
+--------------------
+Zmiany w ZPDzapis 0.0.0.9100 (27.04.2015)
+
+Zmiany:
+- Dopasowanie kodu funkcji stworz_skale() do zmian w strukturze bazy.
+
+--------------------
+Zmiany w ZPDzapis 0.0.0.9000 (17.02.2015)
 
 - Funkcje przeniesione z pakietu ZPD:
+  - stworz_skale();
+  - edytuj_skale();
+  - stworz_test();
+  - stworz_test_z_wielu_czesci();
+  - znajdz_pseudokryteria() - nie eksportowana;
+  - pobierz_pseudokryteria() - nie eksportowana;
+  - sprawdz_skroty_skal() - nie eksportowana;
 
 - Funkcje przeniesione z pakietu EWDdane:
   - stworz_test_z_wielu_czesci();
   - zapisz_oszacowania_umiejetnosci();
   - zapisz_parametry_skalowania();
+  - usun_kryteria_ze_skali();
   - wstaw_do_skalowania_elementy() - nie eksportowana;
   - sprawdz_zgodnosc_kryteriow() - nie eksportowana;
   - wydziel_kryteria_pseudokryteria() - nie eksportowana.
