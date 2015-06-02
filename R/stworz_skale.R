@@ -40,7 +40,7 @@ stworz_skale = function(
 	.sqlQuery(P, "BEGIN")
 		
   idSkali = .sqlQuery(P, "SELECT nextval('skale_id_skali_seq')")[1, 1]
-  zap = "INSERT INTO skale (id_skali, opis, rodzaj_skali, do_prezentacji) VALUES (?, ?, ?, ?, ?)"
+  zap = "INSERT INTO skale (id_skali, opis, rodzaj_skali, do_prezentacji) VALUES (?, ?, ?, ?)"
   .sqlQuery(P, zap, list(idSkali, opis, rodzaj, doPrezentacji))
   zap = "INSERT INTO skale_testy (id_skali, id_testu) VALUES (?, ?)"
   .sqlQuery(P, zap, list(rep(idSkali, length(idTestow)), idTestow))
