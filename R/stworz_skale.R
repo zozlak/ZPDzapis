@@ -17,7 +17,7 @@ stworz_skale = function(
 	zrodloDanychODBC = 'EWD'
 ){
   stopifnot(
-    is.vector(opis), is.character(opis), length(opis) == 1, !is.na(nazwa), opis != '', 
+    is.vector(opis), is.character(opis), length(opis) == 1, opis != '', 
     is.vector(rodzaj), is.character(rodzaj), length(rodzaj) == 1, !is.na(rodzaj),
     is.vector(doPrezentacji), is.logical(doPrezentacji), length(doPrezentacji) == 1, !is.na(doPrezentacji),
     is.vector(idTestow), is.numeric(idTestow),
