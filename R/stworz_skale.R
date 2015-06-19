@@ -28,9 +28,7 @@ stworz_skale = function(
     is.vector(zrodloDanychODBC), is.character(zrodloDanychODBC), length(zrodloDanychODBC) == 1
   )
   P = odbcConnect(zrodloDanychODBC)
-	on.exit({
-	  odbcClose(P)
-	})
+	on.exit(odbcClose(P))
 
   idTestow = na.exclude(idTestow)
   stopifnot(

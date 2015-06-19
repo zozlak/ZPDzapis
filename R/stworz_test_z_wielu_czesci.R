@@ -109,8 +109,6 @@ stworz_test_z_wielu_czesci = function(
 
       return(idTestu)
     },
-    finally = function(){
-      odbcClose(P)
-    }
+    finally = odbcClose(P)
   )
 }

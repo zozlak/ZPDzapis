@@ -16,12 +16,6 @@
 #' @import RODBCext
 stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "",
                             zrodloDanychODBC = "EWD") {
-  library(ZPDzapis)
-  rodzajEgzaminu = 'egzamin gimnazjalny'
-  rok = 2012
-  zrodloDanychODBC = "ewd"
-  sufiks = "test"
-
   stopifnot(is.character(rodzajEgzaminu), length(rodzajEgzaminu) == 1,
             is.numeric(rok), length(rok) > 0,
             is.character(sufiks), length(sufiks) == 1,
@@ -82,12 +76,10 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "",
   }
   # sprawdźmy, czy aby skale o takich opisach nie są już zarejestrowane
   P = odbcConnect(zrodloDanychODBC)
-  on.exit({
-    odbcClose(P)
-  })
-  skaleWBazie = sqlExecute(P, "SELECT opis FROM skale",
-                           fetch = TRUE)
+  on.exit(odbcClose(P))
+  skaleWBazie = sqlExecute(P, "SELECT opis FROM skale", fetch = TRUE)
   odbcClose(P)
+  on.exit({})
   skaleWBazie = names(skale)[names(skale) %in% skaleWBazie$opis]
   if (length(skaleWBazie) > 0) {
     stop("W bazie istnieją już zarejestrowane skale o opisie: ",
@@ -101,9 +93,7 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "",
     # wyszukiwanie id_testów
     message("Tworzenie skali '", names(skale)[i], "'.")
     P = odbcConnect(zrodloDanychODBC)
-    on.exit({
-      odbcClose(P)
-    })
+    on.exit(odbcClose(P))
     idTestow = vector(mode = "list", length = length(skale[[i]]))
     for (j in 1:length(idTestow)) {
       idTestow[[j]] = sqlExecute(P, "SELECT id_testu
@@ -125,6 +115,7 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "",
     kryteria = sqlExecute(P, zapytanie, as.list(idTestow), fetch = TRUE)
     kryteria = kryteria[!duplicated(kryteria$id_kryterium), ]
     odbcClose(P)
+    on.exit({})
     # ewentualne tworzenie nowego testu (jeśli skala obejmuje wiele części egzaminu)
     if (length(skale[[i]]) > 1) {
       opis = sub("^ewd", rodzajEgzaminu, names(skale)[i])
@@ -133,25 +124,22 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "",
                                             czyEwd, opis, zrodloDanychODBC)
       # przyłączanie kryteriów do tego testu
       P = odbcConnect(zrodloDanychODBC)
-      on.exit({
-        odbcClose(P)
-      })
+      on.exit(odbcClose(P))
+      odbcSetAutoCommit(P, FALSE)
       kryteria$id_testu = idTestow
       kryteria = cbind(kryteria, popr_dystraktor = NA)
-      odbcSetAutoCommit(P, FALSE)
       sqlExecute(P, "INSERT INTO testy_kryteria (id_testu, id_kryterium,
                       kolejnosc, popr_dystraktor) VALUES (?, ?, ?, ?)",
                  kryteria, fetch = TRUE)
       odbcEndTran(P, TRUE)
       odbcClose(P)
+      on.exit({})
     }
     # rejestrowanie skali
     idSkal[i] = stworz_skale(names(skale)[i], "ewd", FALSE, idTestow, zrodloDanychODBC)
     # przyłączanie kryteriów do skali
     P = odbcConnect(zrodloDanychODBC)
-    on.exit({
-      odbcClose(P)
-    })
+    on.exit(odbcClose(P))
     odbcSetAutoCommit(P, FALSE)
     kryteria = data.frame(kolejnosc = 1:nrow(kryteria), id_skali = unname(idSkal[i]),
                           kryteria$id_kryterium)
@@ -160,6 +148,7 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "",
                kryteria, fetch = TRUE)
     odbcEndTran(P, TRUE)
     odbcClose(P)
+    on.exit({})
   }
 
   return(idSkal)

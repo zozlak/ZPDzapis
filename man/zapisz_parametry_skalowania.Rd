@@ -10,8 +10,7 @@ zapisz_parametry_skalowania(nazwa_skali = NULL, id_testu = NULL,
 }
 \arguments{
 \item{nazwa_skali}{nazwa skali. Kiedy nazwa skali przymuje wartość NULL nie jest
-brana pod
-uwagę w wyszukiwaniu. Wartość domyślna to NULL.}
+brana pod uwagę w wyszukiwaniu. Wartość domyślna to NULL.}
 
 \item{id_testu}{id testu. Kiedy id testu przymuje wartość NULL nie jest brana pod
 uwagę w wyszukiwaniu. Wartość domyślna to NULL.}
