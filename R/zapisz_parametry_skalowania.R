@@ -2,8 +2,7 @@
 #' @description
 #' Funkcja zapisuje parametry skalowania do bazy danych
 #' @param nazwa_skali nazwa skali. Kiedy nazwa skali przymuje wartość NULL nie jest
-#' brana pod
-#' uwagę w wyszukiwaniu. Wartość domyślna to NULL.
+#' brana pod uwagę w wyszukiwaniu. Wartość domyślna to NULL.
 #' @param id_testu id testu. Kiedy id testu przymuje wartość NULL nie jest brana pod
 #' uwagę w wyszukiwaniu. Wartość domyślna to NULL.
 #' @param doPrezentacji wartość boolowska określająca, czy wstawiane skalowanie ma być do prezentacji
@@ -14,6 +13,7 @@
 #' @param rEAP rzetelność empiryczna, która domyśnie wynosi NULL.
 #' @param zrodloDanychODBC string określający źródło danych. Wartość domyślna to 'EWD'.
 #' @return Funkcja zwraca id skalowania.
+#' @importFrom RODBC odbcConnect odbcClose odbcSetAutoCommit odbcEndTran
 #' @import RODBCext
 #' @export
 zapisz_parametry_skalowania = function(nazwa_skali=NULL, id_testu=NULL, doPrezentacji,

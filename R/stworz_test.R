@@ -4,16 +4,17 @@
 #' @param ewd czy będzie to test ewd [logical]
 #' @param opis opis testu
 #' @param data data testu
-#' @param rodzajEgzaminu rodzaj egzaminu powiązany z testem (lub NA) 
+#' @param rodzajEgzaminu rodzaj egzaminu powiązany z testem (lub NA)
 #' @param czescEgzaminu część egzaminu powiązana z testem (lub NA)
 #' @param idTestow wektor id_testu testów, których kryteria oceny mają zostać skopiowane do tworzonego testu
 #' @param zrodloDanychODBC nazwa zrodla danych ODBC, ktorego nalezy uzyc
 #' @return [numeric] id_testu utworzonego testu
 #' @export
+#' @importFrom RODBC odbcConnect odbcClose odbcSetAutoCommit odbcEndTran
 #' @import RODBCext
 stworz_test = function(
 	ewd,
-	opis, 
+	opis,
 	data,
   rodzajEgzaminu = NA_character_,
 	czescEgzaminu = NA_character_,
@@ -33,27 +34,27 @@ stworz_test = function(
 	on.exit({
 	  odbcClose(P)
 	})
-	
+
 	odbcSetAutoCommit(P, FALSE)
 	.sqlQuery(P, "BEGIN;")
-		
+
 	idTestu = .sqlQuery(P, "SELECT nextval('testy_id_testu_seq')")[1, 1]
 	.sqlQuery(P,
 		"INSERT INTO testy (id_testu, opis, data, ewd, rodzaj_egzaminu, czesc_egzaminu) VALUES (?, ?, ?, ?, ?, ?)",
 		list(idTestu, opis, data, ewd, rodzajEgzaminu, czescEgzaminu)
 	)
-		
+
 	if(!is.null(idTestow)){
 		idTestow = na.exclude(idTestow)
 		if(length(idTestow) > 0){
 			.sqlQuery(P, "CREATE TEMPORARY SEQUENCE tmp_kolejnosc")
 		  zap = sprintf(
-		    "INSERT INTO testy_kryteria (id_testu, id_kryterium, kolejnosc) 
+		    "INSERT INTO testy_kryteria (id_testu, id_kryterium, kolejnosc)
 					SELECT %d, t.*, nextval('tmp_kolejnosc')
 					FROM
 						(
-							SELECT DISTINCT id_kryterium 
-							FROM testy_kryteria 
+							SELECT DISTINCT id_kryterium
+							FROM testy_kryteria
 							WHERE id_testu IN (%s)
               ORDER BY 1
 						) AS t",
@@ -63,7 +64,7 @@ stworz_test = function(
 			.sqlQuery(P, zap)
 		}
 	}
-		
+
 	odbcEndTran(P, TRUE)
 
 	return(idTestu)

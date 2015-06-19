@@ -1,0 +1,155 @@
+#' @title Tworzy w bazie skale zwiazane z wyliczaniem wskaznikow EWD
+#' @description
+#' Dla podanego rodzaju egzaminu i roku funkcja tworzy odpowiednie skale,
+#' potrzebne do wyliczania wskaźników EWD, przypisujac do nich wszystkie
+#' kryteria odpowiednich części egzaminu.
+#'
+#' Uwaga, skale tworzone są z flagą \code{do_prezentacji} ustawioną na
+#' \code{FALSE}.
+#' @param rodzajEgzaminu ciąg znaków
+#' @param rok liczba całkowita
+#' @param sufiks ciąg znaków - sufiks dodawany do opisów skal
+#' @param zrodloDanychODBC nazwa żródła danych ODBC, którego należy użyc
+#' @return wektor liczbowy zawierający id_skali utworzonych skal
+#' @export
+#' @importFrom RODBC odbcConnect odbcClose odbcSetAutoCommit odbcEndTran
+#' @import RODBCext
+stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "",
+                            zrodloDanychODBC = "EWD") {
+  stopifnot(is.character(rodzajEgzaminu), length(rodzajEgzaminu) == 1,
+            is.numeric(rok), length(rok) > 0,
+            is.character(sufiks), length(sufiks) == 1,
+            is.character(zrodloDanychODBC), length(zrodloDanychODBC) == 1)
+  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2014)
+  stopifnot(rodzajEgzaminu %in% c("sprawdzian", "egzamin gimnazjalny", "matura"))
+
+  # tworzenie listy ze skalami i powiązanymi z nimi częściami egzaminów
+  if (rodzajEgzaminu == "sprawdzian") {
+    skale = list(
+      "ewd;s;" = c("")
+    )
+  } else if (rodzajEgzaminu == "egzamin gimnazjalny") {
+    if (rok < 2012) {
+      skale = list(
+        "ewd;gh;" = c("humanistyczna"),
+        "ewd;gm;" = c("matematyczno-przyrodnicza")
+      )
+    } else {
+      skale = list(
+        "ewd;gh;"   = c("j. polski", "historia i WOS"),
+        "ewd;gh_h;" = c("historia i WOS"),
+        "ewd;gh_p;" = c("j. polski"),
+        "ewd;gm;"   = c("matematyka", "przedmioty przyrodnicze"),
+        "ewd;gm_m;" = c("matematyka"),
+        "ewd;gm_p;" = c("przedmioty przyrodnicze")
+      )
+    }
+  } else if (rodzajEgzaminu == "matura") {
+    if (rok < 2015) {
+      skale = list(
+        "ewd;m_h;"  = c("j. polski podstawowa", "j. polski rozszerzona",
+                        "historia podstawowa",  "historia rozszerzona",
+                        "WOS podstawowa",       "WOS rozszerzona"),
+        "ewd;m_jp;" = c("j. polski podstawowa", "j. polski rozszerzona"),
+        "ewd;m_m;"  = c("matematyka podstawowa", "matematyka rozszerzona"),
+        "ewd;m_mp;" = c("matematyka podstawowa",  "matematyka rozszerzona",
+                        "biologia podstawowa",    "biologia rozszerzona",
+                        "chemia podstawowa",      "chemia rozszerzona",
+                        "fizyka podstawowa",      "fizyka rozszerzona",
+                        "geografia podstawowa",   "geografia rozszerzona",
+                        "informatyka podstawowa", "informatyka rozszerzona")
+      )
+    } else {
+      stop("Rok 2015 jeszcze nie obsługiwany.")
+    }
+  }
+  names(skale) = paste0(names(skale), rok)
+  if (sufiks != "") {
+    names(skale) = paste0(names(skale), ";", sub("^;","", sufiks))
+  }
+  if ((rodzajEgzaminu == "sprawdzian" & rok < 2003) |
+      (rodzajEgzaminu == "egzamin gimnazjalny" & rok < 2006) |
+      (rodzajEgzaminu == "matura" & rok < 2010)) {
+    czyEwd = FALSE
+  } else {
+    czyEwd = TRUE
+  }
+  # sprawdźmy, czy aby skale o takich opisach nie są już zarejestrowane
+  P = odbcConnect(zrodloDanychODBC)
+  on.exit(odbcClose(P))
+  skaleWBazie = sqlExecute(P, "SELECT opis FROM skale", fetch = TRUE)
+  odbcClose(P)
+  on.exit({})
+  skaleWBazie = names(skale)[names(skale) %in% skaleWBazie$opis]
+  if (length(skaleWBazie) > 0) {
+    stop("W bazie istnieją już zarejestrowane skale o opisie: ",
+         paste0(paste0("'", skaleWBazie, "'"), collapse = ", "), ".\n",
+         "Podaj inny sufiks, aby utworzyć skale o unikalnym opisie.")
+  }
+
+  # ruszamy do pracy
+  idSkal = setNames(rep(NA, length(skale)), names(skale))
+  for(i in 1:length(skale)) {
+    # wyszukiwanie id_testów
+    message("Tworzenie skali '", names(skale)[i], "'.")
+    P = odbcConnect(zrodloDanychODBC)
+    on.exit(odbcClose(P))
+    idTestow = vector(mode = "list", length = length(skale[[i]]))
+    for (j in 1:length(idTestow)) {
+      idTestow[[j]] = sqlExecute(P, "SELECT id_testu
+                                      FROM arkusze JOIN testy USING (arkusz)
+                                      WHERE arkusze.rodzaj_egzaminu = ?
+                                       AND arkusze.czesc_egzaminu = ?
+                                       AND EXTRACT(YEAR FROM data_egzaminu) = ?
+                                       AND ewd = ?",
+                                 list(rodzajEgzaminu, skale[[i]][j], rok, czyEwd),
+                                 fetch = TRUE)
+    }
+    # wyszukiwanie kryteriow oceny
+    idTestow = unique(unlist(idTestow))
+    zapytanie = paste0("SELECT id_testu, id_kryterium, kolejnosc ",
+                       "FROM kryteria_oceny INNER JOIN testy_kryteria USING (id_kryterium) ",
+                       "WHERE id_testu in (",
+                       paste0(rep("?", length(idTestow)), collapse = ", "), ") ",
+                       "ORDER BY id_testu, kolejnosc, id_kryterium")
+    kryteria = sqlExecute(P, zapytanie, as.list(idTestow), fetch = TRUE)
+    kryteria = kryteria[!duplicated(kryteria$id_kryterium), ]
+    odbcClose(P)
+    on.exit({})
+    # ewentualne tworzenie nowego testu (jeśli skala obejmuje wiele części egzaminu)
+    if (length(skale[[i]]) > 1) {
+      opis = sub("^ewd", rodzajEgzaminu, names(skale)[i])
+      message(" Tworzenie nowego testu: '", opis, "' (może chwilę potrwać...).")
+      idTestow = stworz_test_z_wielu_czesci(rodzajEgzaminu, skale[[i]], rok,
+                                            czyEwd, opis, zrodloDanychODBC)
+      # przyłączanie kryteriów do tego testu
+      P = odbcConnect(zrodloDanychODBC)
+      on.exit(odbcClose(P))
+      odbcSetAutoCommit(P, FALSE)
+      kryteria$id_testu = idTestow
+      kryteria = cbind(kryteria, popr_dystraktor = NA)
+      sqlExecute(P, "INSERT INTO testy_kryteria (id_testu, id_kryterium,
+                      kolejnosc, popr_dystraktor) VALUES (?, ?, ?, ?)",
+                 kryteria, fetch = TRUE)
+      odbcEndTran(P, TRUE)
+      odbcClose(P)
+      on.exit({})
+    }
+    # rejestrowanie skali
+    idSkal[i] = stworz_skale(names(skale)[i], "ewd", FALSE, idTestow, zrodloDanychODBC)
+    # przyłączanie kryteriów do skali
+    P = odbcConnect(zrodloDanychODBC)
+    on.exit(odbcClose(P))
+    odbcSetAutoCommit(P, FALSE)
+    kryteria = data.frame(kolejnosc = 1:nrow(kryteria), id_skali = unname(idSkal[i]),
+                          kryteria$id_kryterium)
+    sqlExecute(P, "INSERT INTO skale_elementy (kolejnosc, id_skali, id_kryterium)
+                    VALUES (?, ?, ?)",
+               kryteria, fetch = TRUE)
+    odbcEndTran(P, TRUE)
+    odbcClose(P)
+    on.exit({})
+  }
+
+  return(idSkal)
+}

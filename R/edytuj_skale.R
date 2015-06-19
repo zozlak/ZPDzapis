@@ -7,12 +7,12 @@
 #' @param zrodloDanychODBC nazwa zrodla danych ODBC, ktorego nalezy uzyc
 #' @return [data.frame] zapisane elementy skali
 #' @export
-#' @import RODBC
+#' @importFrom RODBC odbcConnect odbcClose odbcSetAutoCommit odbcEndTran
 #' @import RODBCext
 edytuj_skale = function(
-	idSkali, 
-	elementy, 
-	nadpisz = FALSE, 
+	idSkali,
+	elementy,
+	nadpisz = FALSE,
 	zrodloDanychODBC = 'EWD'
 ){
   stopifnot(
@@ -27,7 +27,7 @@ edytuj_skale = function(
   if(any((!is.na(elementy$id_kryterium) | !is.na(elementy$id_pseudokryterium)) & rowSums(!is.na(kryteria)) > 0)){
     stop('dla niektorych elementow skali zdefiniowano jednoczesnie id_kryterium/id_pseudokryterium, jak i wartosci w kolumnach id_kryterium_N')
   }
-  
+
 	P = odbcConnect(zrodloDanychODBC)
 	on.exit({
 	  odbcClose(P)
@@ -35,7 +35,7 @@ edytuj_skale = function(
 
 	odbcSetAutoCommit(P, FALSE)
 	.sqlQuery(P, "BEGIN")
-		
+
 	kolOpis = grep('^opis$', names(elementy))
 	#<-- na wypadek factor-ow
 	if(ncol(kryteria) > 0){
@@ -48,7 +48,7 @@ edytuj_skale = function(
 	elementy$opis = as.character(elementy$opis)
 	elementy$id_skrotu = as.character(elementy$id_skrotu)
 	#-->
-	
+
 	#<-- testy zwiazane ze skala
   stopifnot(
     idSkali %in% .sqlQuery(P, "SELECT id_skali FROM skale")[, 1],
@@ -61,7 +61,7 @@ edytuj_skale = function(
 	  stop('nie mozna edytowac skali - ma ona juz wpisane do bazy parametry zadan i/lub estymacje umiejetnosci uczniow')
 	}
 	#-->
-	
+
 	krytBaza = .sqlQuery(P, "SELECT id_kryterium FROM kryteria_oceny")[, 1]
 	pkrytBaza = pobierz_pseudokryteria(P)
 	#<-- weryfikacja elementow skali - istnienie id_kryterium/id_pseudokryteriu w bazie
@@ -83,9 +83,9 @@ edytuj_skale = function(
 	}
 	rm(tmp)
 	#-->
-	
+
 	#<-- odnajdowanie id_pseudokryterium i ew. tworzenie pseudokryteriow
-	tmp = znajdz_pseudokryteria(kryteria, elementy$opis, P) 
+	tmp = znajdz_pseudokryteria(kryteria, elementy$opis, P)
 	elementy$id_pseudokryterium[!is.na(tmp)] = tmp[!is.na(tmp)]
 	#-->
 
@@ -99,11 +99,11 @@ edytuj_skale = function(
 	}
   rm(tmp)
 	#-->
-	
+
 	#<-- tworzenie brakujacych skrotow skal
 	sprawdz_skroty_skal(elementy$id_skrotu, P)
 	#-->
-	
+
 	#<-- duplikaty
 	tmp = duplicated(elementy$id_kryterium) & !is.na(elementy$id_kryterium)
 	if(any(tmp)){
@@ -115,23 +115,23 @@ edytuj_skale = function(
 	}
 	rm(tmp)
 	#-->
-	
+
 	if(nadpisz){
 	  .sqlQuery(P, "DELETE FROM skale_elementy WHERE id_skali = ?", idSkali)
 	}
-	
+
 	#<-- zapis do bazy
   zap = "INSERT INTO skale_elementy (kolejnosc, id_skali, id_kryterium, id_pseudokryterium, id_skrotu) VALUES (?, ?, ?, ?, ?)"
   tmp = data.frame(
-    1:nrow(elementy), 
-    rep(idSkali, nrow(elementy)), 
-    elementy$id_kryterium, 
-    elementy$id_pseudokryterium, 
+    1:nrow(elementy),
+    rep(idSkali, nrow(elementy)),
+    elementy$id_kryterium,
+    elementy$id_pseudokryterium,
     elementy$id_skrotu
   )
   .sqlQuery(P, zap, tmp)
 	#-->
-  
+
 	odbcEndTran(P, TRUE)
 	return(elementy)
 }

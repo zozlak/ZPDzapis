@@ -17,6 +17,7 @@
 #' być zapisane.
 #' @return Funkcja zwraca ramkę danych, która podana do funkcji
 #' \code{\link[ZPDzapis]{edytuj_skale}} usunie z niej zbędne (pseudo)kryteria.
+#' @importFrom RODBC odbcConnect odbcClose odbcSetAutoCommit odbcEndTran
 #' @import RODBCext
 #' @export
 zapisz_oszacowania_umiejetnosci = function(oszacowania, skrotCzesci, rEAP, rodzajEgzaminu,

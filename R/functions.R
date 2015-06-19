@@ -17,6 +17,7 @@
 #' @param P otwarte polaczenie ODBC
 #' @param sql polecenie SQL do wykonania
 #' @return data.frame
+#' @importFrom RODBC odbcClearError odbcGetErrMsg
 #' @import RODBCext
 .sqlQuery = function(P, sql, dane = NULL){
 	odbcClearError(P)

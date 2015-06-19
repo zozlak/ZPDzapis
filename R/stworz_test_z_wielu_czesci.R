@@ -7,7 +7,7 @@
 #' @param czesciEgzaminu wektor części egzaminu, które mają zostać połączone
 #' @param rokEgzaminu rok egzaminu
 #' @param czyEwd czy dane mają pochodzić z testów EWD
-#' @param opis opis nowetworzonego testu w tablic \code{testy}
+#' @param opis opis nowotworzonego testu w tablic \code{testy}
 #' @param zrodloDanychODBC opcjonalnie nazwa źródła danych ODBC, dającego dostęp do bazy
 #' (domyślnie "EWD")
 #' @details
@@ -25,7 +25,7 @@
 #' z identycznych testów składowych - porównanie bazuje tylko na opisie testu, który jest
 #' ustawiany arbitralnie przez tworządego test.
 #' @return id_testu utworzonego testu
-#' @import RODBC
+#' @importFrom RODBC odbcConnect odbcClose odbcSetAutoCommit odbcEndTran
 #' @import RODBCext
 #' @export
 stworz_test_z_wielu_czesci = function(
@@ -76,9 +76,10 @@ stworz_test_z_wielu_czesci = function(
       # Pobierz testy składowe
       idTestu = sqlExecute(P, "SELECT nextval('testy_id_testu_seq')", NULL, T)[1, 1]
       zapytanie = "
-        INSERT INTO testy (id_testu, opis, data, ewd, arkusz)
-        VALUES (?, ?, ?, ?, null)"
-      sqlExecute(P, zapytanie, data.frame(idTestu, opis, testy$data_egzaminu[1], czyEwd))
+        INSERT INTO testy (id_testu, opis, data, ewd, arkusz, rodzaj_egzaminu)
+        VALUES (?, ?, ?, ?, null, ?)"
+      sqlExecute(P, zapytanie, data.frame(idTestu, opis, testy$data_egzaminu[1],
+                                          czyEwd, rodzajEgzaminu))
 
       # Przygotuj zapytania źródłowe
       coalesce = function(testy, kolumna){
@@ -108,8 +109,6 @@ stworz_test_z_wielu_czesci = function(
 
       return(idTestu)
     },
-    finally = function(){
-      odbcClose(P)
-    }
+    finally = odbcClose(P)
   )
 }
