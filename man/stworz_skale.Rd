@@ -21,6 +21,9 @@ stworz_skale(opis, rodzaj, doPrezentacji, idTestow, zrodloDanychODBC = "EWD")
 [numeric] id_skali utworzonej skali
 }
 \description{
-_
+Funkcja stworz_skale() służy do „zarejestrowania” w bazie nowej skali.
+Po dokonaniu takiego „zarejestrowania” należy wprowadzić do bazy informacje
+o kryteriach oceny i pseudokryteriach oceny, z których składa się dana skala
+- służy do tego funkcja \code{\link{edytuj_skale}}.
 }
 

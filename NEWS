@@ -1,4 +1,15 @@
 --------------------
+Zmiany w ZPDzapis 0.1.0.0000 (19.06.2015)
+
+Nowe funkcje:
+- stworz_skale_ewd() - pozwala wygodnie i bez zbędnego myślenia stworzyć skale
+    potrzebne do wyliczania wskaźników EWD oraz przypisać do nich kryteria oceny;
+
+Naprawione błędy:
+- Kwestie importu funkcji z pakietów RODBC i RODBCext zostały wyprowadzone tak,
+  żeby nie skutkowały ostrzeżeniami przy ładowaniu pakietu.
+
+--------------------
 Zmiany w ZPDzapis 0.0.0.9200 (02.06.2015)
 
 Naprawione błędy:

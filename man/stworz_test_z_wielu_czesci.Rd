@@ -16,7 +16,7 @@ stworz_test_z_wielu_czesci(rodzajEgzaminu, czesciEgzaminu, rokEgzaminu, czyEwd,
 
 \item{czyEwd}{czy dane mają pochodzić z testów EWD}
 
-\item{opis}{opis nowetworzonego testu w tablic \code{testy}}
+\item{opis}{opis nowotworzonego testu w tablic \code{testy}}
 
 \item{zrodloDanychODBC}{opcjonalnie nazwa źródła danych ODBC, dającego dostęp do bazy
 (domyślnie "EWD")}
