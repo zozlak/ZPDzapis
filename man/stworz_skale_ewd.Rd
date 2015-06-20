@@ -11,7 +11,8 @@ stworz_skale_ewd(rodzajEgzaminu, rok, sufiks = "", zrodloDanychODBC = "EWD")
 
 \item{rok}{liczba całkowita}
 
-\item{sufiks}{ciąg znaków - sufiks dodawany do opisów skal}
+\item{sufiks}{ciąg znaków - sufiks dodawany do opisów skal (nie jest dodawany
+do opisu tworzonych testów)}
 
 \item{zrodloDanychODBC}{nazwa żródła danych ODBC, którego należy użyc}
 }
@@ -21,7 +22,9 @@ wektor liczbowy zawierający id_skali utworzonych skal
 \description{
 Dla podanego rodzaju egzaminu i roku funkcja tworzy odpowiednie skale,
 potrzebne do wyliczania wskaźników EWD, przypisujac do nich wszystkie
-kryteria odpowiednich części egzaminu.
+kryteria odpowiednich części egzaminu. Tworzy też (wykorzystując funkcję
+\code{\link{stworz_test_z_wielu_czesci}}) testy odpowiadające skalom,
+które obejmują kilka części egzaminu.
 
 Uwaga, skale tworzone są z flagą \code{do_prezentacji} ustawioną na
 \code{FALSE}.

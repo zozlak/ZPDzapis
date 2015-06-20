@@ -2,13 +2,16 @@
 #' @description
 #' Dla podanego rodzaju egzaminu i roku funkcja tworzy odpowiednie skale,
 #' potrzebne do wyliczania wskaźników EWD, przypisujac do nich wszystkie
-#' kryteria odpowiednich części egzaminu.
+#' kryteria odpowiednich części egzaminu. Tworzy też (wykorzystując funkcję
+#' \code{\link{stworz_test_z_wielu_czesci}}) testy odpowiadające skalom,
+#' które obejmują kilka części egzaminu.
 #'
 #' Uwaga, skale tworzone są z flagą \code{do_prezentacji} ustawioną na
 #' \code{FALSE}.
 #' @param rodzajEgzaminu ciąg znaków
 #' @param rok liczba całkowita
-#' @param sufiks ciąg znaków - sufiks dodawany do opisów skal
+#' @param sufiks ciąg znaków - sufiks dodawany do opisów skal (nie jest dodawany
+#' do opisu tworzonych testów)
 #' @param zrodloDanychODBC nazwa żródła danych ODBC, którego należy użyc
 #' @return wektor liczbowy zawierający id_skali utworzonych skal
 #' @export
@@ -120,8 +123,9 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "",
     if (length(skale[[i]]) > 1) {
       opis = sub("^ewd", rodzajEgzaminu, names(skale)[i])
       message(" Tworzenie nowego testu: '", opis, "' (może chwilę potrwać...).")
-      idTestow = stworz_test_z_wielu_czesci(rodzajEgzaminu, skale[[i]], rok,
-                                            czyEwd, opis, zrodloDanychODBC)
+      idTestow = stworz_test_z_wielu_czesci(rodzajEgzaminu,
+                                            sub(paste0(";", sufiks, "$"), "", skale[[i]]),
+                                            rok, czyEwd, opis, zrodloDanychODBC)
       # przyłączanie kryteriów do tego testu
       P = odbcConnect(zrodloDanychODBC)
       on.exit(odbcClose(P))
