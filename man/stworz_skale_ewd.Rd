@@ -4,7 +4,8 @@
 \alias{stworz_skale_ewd}
 \title{Tworzy w bazie skale zwiazane z wyliczaniem wskaznikow EWD}
 \usage{
-stworz_skale_ewd(rodzajEgzaminu, rok, sufiks = "", zrodloDanychODBC = "EWD")
+stworz_skale_ewd(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
+  dopisz = FALSE, zrodloDanychODBC = "EWD")
 }
 \arguments{
 \item{rodzajEgzaminu}{ciąg znaków}
@@ -13,6 +14,13 @@ stworz_skale_ewd(rodzajEgzaminu, rok, sufiks = "", zrodloDanychODBC = "EWD")
 
 \item{sufiks}{ciąg znaków - sufiks dodawany do opisów skal (nie jest dodawany
 do opisu tworzonych testów)}
+
+\item{czyRasch}{wartość logiczna - czy tworzyć również skale raschowe do
+Kalkulatora EWD?}
+
+\item{dopisz}{wartość logiczna - czy jeśli istnieją już w bazie jakieś skale
+spośród tych, które ma utworzyć funkcja, to pominąć je i utworzyć pozostałe
+(zamiast nie zapisać nic i zwrócić błąd)?}
 
 \item{zrodloDanychODBC}{nazwa żródła danych ODBC, którego należy użyc}
 }

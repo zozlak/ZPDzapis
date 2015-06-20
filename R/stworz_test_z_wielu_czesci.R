@@ -8,6 +8,9 @@
 #' @param rokEgzaminu rok egzaminu
 #' @param czyEwd czy dane mają pochodzić z testów EWD
 #' @param opis opis nowotworzonego testu w tablic \code{testy}
+#' @param czescEgzaminuZapisz opcjonalnie nazwa części egzaminu, która zostanie
+#' przypisana nowej skali w kolumnie \code{czesz_egzaminu} tablicy \code{testy}
+#' (znajduje zastosowanie w odniesieniu do egzaminu gimnazjalnego)
 #' @param zrodloDanychODBC opcjonalnie nazwa źródła danych ODBC, dającego dostęp do bazy
 #' (domyślnie "EWD")
 #' @details
@@ -34,6 +37,7 @@ stworz_test_z_wielu_czesci = function(
   rokEgzaminu,
   czyEwd,
   opis,
+  czescEgzaminuZapisz = NA,
   zrodloDanychODBC = 'EWD'
 ){
   stopifnot(
@@ -42,6 +46,8 @@ stworz_test_z_wielu_czesci = function(
     is.numeric(rokEgzaminu)       , length(rokEgzaminu) == 1,
     is.logical(czyEwd)            , length(czyEwd) == 1,
     is.character(opis)            , length(opis) == 1,
+    is.character(czescEgzaminuZapisz) | is.na(czescEgzaminuZapisz),
+    length(czescEgzaminuZapisz) == 1,
     opis[1] != '',
     is.character(zrodloDanychODBC), length(zrodloDanychODBC) == 1
   )
@@ -50,7 +56,7 @@ stworz_test_z_wielu_czesci = function(
 
   czyJest = sqlExecute(P, "SELECT id_testu FROM testy WHERE opis = ?", opis,
                        fetch = T)[, 1]
-  if(length(czyJest) > 0) {
+  if (length(czyJest) > 0) {
     warning('w bazie istnieje już taki test')
     return(czyJest[1])
   }
@@ -76,10 +82,10 @@ stworz_test_z_wielu_czesci = function(
   # Pobierz testy składowe
   idTestu = sqlExecute(P, "SELECT nextval('testy_id_testu_seq')", NULL, T)[1, 1]
   zapytanie = "
-        INSERT INTO testy (id_testu, opis, data, ewd, arkusz, rodzaj_egzaminu)
-        VALUES (?, ?, ?, ?, null, ?)"
+        INSERT INTO testy (id_testu, opis, data, ewd, arkusz, rodzaj_egzaminu, czesc_egzaminu)
+        VALUES (?, ?, ?, ?, null, ?, ?)"
   sqlExecute(P, zapytanie, data.frame(idTestu, opis, testy$data_egzaminu[1],
-                                      czyEwd, rodzajEgzaminu))
+                                      czyEwd, rodzajEgzaminu, czescEgzaminuZapisz))
 
   # Przygotuj zapytania źródłowe
   coalesce = function(testy, kolumna){

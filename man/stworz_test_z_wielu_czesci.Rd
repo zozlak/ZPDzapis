@@ -5,7 +5,7 @@
 \title{Tworzenie testów będących złączeniem kilku części egzaminu.}
 \usage{
 stworz_test_z_wielu_czesci(rodzajEgzaminu, czesciEgzaminu, rokEgzaminu, czyEwd,
-  opis, zrodloDanychODBC = "EWD")
+  opis, czescEgzaminuZapisz = NA, zrodloDanychODBC = "EWD")
 }
 \arguments{
 \item{rodzajEgzaminu}{rodzaj egzaminu ("sprawdzian" / "egzamin gimnazjalny" / "matura")}
@@ -17,6 +17,10 @@ stworz_test_z_wielu_czesci(rodzajEgzaminu, czesciEgzaminu, rokEgzaminu, czyEwd,
 \item{czyEwd}{czy dane mają pochodzić z testów EWD}
 
 \item{opis}{opis nowotworzonego testu w tablic \code{testy}}
+
+\item{czescEgzaminuZapisz}{opcjonalnie nazwa części egzaminu, która zostanie
+przypisana nowej skali w kolumnie \code{czesz_egzaminu} tablicy \code{testy}
+(znajduje zastosowanie w odniesieniu do egzaminu gimnazjalnego)}
 
 \item{zrodloDanychODBC}{opcjonalnie nazwa źródła danych ODBC, dającego dostęp do bazy
 (domyślnie "EWD")}
