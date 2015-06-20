@@ -12,17 +12,24 @@
 #' @param rok liczba całkowita
 #' @param sufiks ciąg znaków - sufiks dodawany do opisów skal (nie jest dodawany
 #' do opisu tworzonych testów)
+#' @param czyRasch wartość logiczna - czy tworzyć również skale raschowe do
+#' Kalkulatora EWD?
+#' @param dopisz wartość logiczna - czy jeśli istnieją już w bazie jakieś skale
+#' spośród tych, które ma utworzyć funkcja, to pominąć je i utworzyć pozostałe
+#' (zamiast nie zapisać nic i zwrócić błąd)?
 #' @param zrodloDanychODBC nazwa żródła danych ODBC, którego należy użyc
 #' @return wektor liczbowy zawierający id_skali utworzonych skal
 #' @export
 #' @importFrom RODBC odbcConnect odbcClose odbcSetAutoCommit odbcEndTran
 #' @import RODBCext
-stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "",
-                            zrodloDanychODBC = "EWD") {
-  stopifnot(is.character(rodzajEgzaminu), length(rodzajEgzaminu) == 1,
-            is.numeric(rok), length(rok) > 0,
-            is.character(sufiks), length(sufiks) == 1,
-            is.character(zrodloDanychODBC), length(zrodloDanychODBC) == 1)
+stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
+                            dopisz = FALSE, zrodloDanychODBC = "EWD") {
+  stopifnot(is.character(rodzajEgzaminu)       , length(rodzajEgzaminu) == 1,
+            is.numeric(rok)                    , length(rok) > 0,
+            is.character(sufiks)               , length(sufiks) == 1,
+            all(czyRasch %in% c(TRUE, FALSE))  , length(czyRasch) == 1,
+            all(dopisz %in% c(TRUE, FALSE))    , length(dopisz) == 1,
+            is.character(zrodloDanychODBC)     , length(zrodloDanychODBC) == 1)
   stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2014)
   stopifnot(rodzajEgzaminu %in% c("sprawdzian", "egzamin gimnazjalny", "matura"))
 
@@ -31,51 +38,80 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "",
     skale = list(
       "ewd;s;" = c("")
     )
+    if (czyRasch) {
+      skale = append(skale, list("ewd;sR;" = c("")))
+    }
   } else if (rodzajEgzaminu == "egzamin gimnazjalny") {
     if (rok < 2012) {
       skale = list(
         "ewd;gh;" = c("humanistyczna"),
         "ewd;gm;" = c("matematyczno-przyrodnicza")
       )
+      if (czyRasch) {
+        skale = append(skale, list(
+          "ewd;ghR;" = c("humanistyczna"),
+          "ewd;gmR;" = c("matematyczno-przyrodnicza"))
+        )
+      }
     } else {
       skale = list(
-        "ewd;gh;"   = c("j. polski", "historia i WOS"),
-        "ewd;gh_h;" = c("historia i WOS"),
-        "ewd;gh_p;" = c("j. polski"),
-        "ewd;gm;"   = c("matematyka", "przedmioty przyrodnicze"),
-        "ewd;gm_m;" = c("matematyka"),
-        "ewd;gm_p;" = c("przedmioty przyrodnicze")
+        "ewd;gh"   = c("j. polski", "historia i WOS"),
+        "ewd;gh_h" = c("historia i WOS"),
+        "ewd;gh_p" = c("j. polski"),
+        "ewd;gm"   = c("matematyka", "przedmioty przyrodnicze"),
+        "ewd;gm_m" = c("matematyka"),
+        "ewd;gm_p" = c("przedmioty przyrodnicze")
       )
+      if (czyRasch) {
+        skale = append(skale, list(
+          "ewd;ghR"   = c("j. polski", "historia i WOS"),
+          "ewd;gh_pR" = c("j. polski"),
+          "ewd;gmR"   = c("matematyka", "przedmioty przyrodnicze"),
+          "ewd;gm_mR" = c("matematyka"))
+        )
+      }
     }
   } else if (rodzajEgzaminu == "matura") {
     if (rok < 2015) {
       skale = list(
-        "ewd;m_h;"  = c("j. polski podstawowa", "j. polski rozszerzona",
+        "ewd;m_h"  = c("j. polski podstawowa", "j. polski rozszerzona",
                         "historia podstawowa",  "historia rozszerzona",
                         "WOS podstawowa",       "WOS rozszerzona"),
-        "ewd;m_jp;" = c("j. polski podstawowa", "j. polski rozszerzona"),
-        "ewd;m_m;"  = c("matematyka podstawowa", "matematyka rozszerzona"),
-        "ewd;m_mp;" = c("matematyka podstawowa",  "matematyka rozszerzona",
+        "ewd;m_jp" = c("j. polski podstawowa", "j. polski rozszerzona"),
+        "ewd;m_m"  = c("matematyka podstawowa", "matematyka rozszerzona"),
+        "ewd;m_mp" = c("matematyka podstawowa",  "matematyka rozszerzona",
                         "biologia podstawowa",    "biologia rozszerzona",
                         "chemia podstawowa",      "chemia rozszerzona",
                         "fizyka podstawowa",      "fizyka rozszerzona",
                         "geografia podstawowa",   "geografia rozszerzona",
                         "informatyka podstawowa", "informatyka rozszerzona")
       )
+      if (czyRasch) {
+        skale = append(skale, list(
+          "ewd;m_jpR" = c("j. polski podstawowa", "j. polski rozszerzona"),
+          "ewd;m_mR"  = c("matematyka podstawowa", "matematyka rozszerzona"))
+        )
+      }
     } else {
       stop("Rok 2015 jeszcze nie obsługiwany.")
     }
   }
-  names(skale) = paste0(names(skale), rok)
+  testy = sub("R$", "", sub("^ewd;", "", names(skale)))
+  names(skale) = paste0(names(skale), ";", rok)
   if (sufiks != "") {
     names(skale) = paste0(names(skale), ";", sub("^;","", sufiks))
   }
-  if ((rodzajEgzaminu == "sprawdzian" & rok < 2003) |
-      (rodzajEgzaminu == "egzamin gimnazjalny" & rok < 2006) |
-      (rodzajEgzaminu == "matura" & rok < 2010)) {
-    czyEwd = FALSE
-  } else {
-    czyEwd = TRUE
+  # mapowanie opisów skal na opisy testów
+  testyMapa = list(
+    "gh"   = c("humanistyczna", "humanistyczna"),
+    "gm"   = c("matematyczno-przyrodnicza", "matematyczno-przyrodnicza"),
+    "m_h"  = c("humanistyczna", NA),
+    "m_jp" = c("polski", NA),
+    "m_m"  = c("matematyka", NA),
+    "m_mp" = c("matematyczno-przyrodnicza", NA)
+  )
+  if (!all(testy[unlist(lapply(skale, length)) > 1] %in% names(testyMapa))) {
+    stop("Niektórych opisów skal nie udało się zmapować na opisy testów. Popraw kod funkcji.")
   }
   # sprawdźmy, czy aby skale o takich opisach nie są już zarejestrowane
   P = odbcConnect(zrodloDanychODBC)
@@ -84,15 +120,31 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "",
   odbcClose(P)
   on.exit({})
   skaleWBazie = names(skale)[names(skale) %in% skaleWBazie$opis]
-  if (length(skaleWBazie) > 0) {
-    stop("W bazie istnieją już zarejestrowane skale o opisie: ",
-         paste0(paste0("'", skaleWBazie, "'"), collapse = ", "), ".\n",
-         "Podaj inny sufiks, aby utworzyć skale o unikalnym opisie.")
+  if (length(skaleWBazie) > 0 & !dopisz) {
+    stop("W bazie istnieją już zarejestrowane skale o opisie:\n ",
+         paste0(paste0("'", skaleWBazie, "'"), collapse = ",\n "), ".\n",
+         "Podaj inny sufiks, aby utworzyć skale o unikalnym opisie, ",
+         "lub wywołaj funkcję z argumentem 'dopisz = TRUE'.")
+  } else if (length(skaleWBazie) > 0) {
+    warning("W bazie istnieją już zarejestrowane skale o opisie:\n ",
+            paste0(paste0("'", skaleWBazie, "'"), collapse = ",\n "), ".")
+    skale = skale[!(names(skale) %in% skaleWBazie)]
+    if (length(skale) == 0) {
+      return(vector(mode = "numeric", length = 0))
+    }
+  }
+  # ustawianie, do jakich danych (EWD/CKE) należy się podpinać
+  if ((rodzajEgzaminu == "sprawdzian" & rok < 2003) |
+      (rodzajEgzaminu == "egzamin gimnazjalny" & rok < 2006) |
+      (rodzajEgzaminu == "matura" & rok < 2010)) {
+    czyEwd = FALSE
+  } else {
+    czyEwd = TRUE
   }
 
   # ruszamy do pracy
   idSkal = setNames(rep(NA, length(skale)), names(skale))
-  for(i in 1:length(skale)) {
+  for (i in 1:length(skale)) {
     # wyszukiwanie id_testów
     message("Tworzenie skali '", names(skale)[i], "'.")
     P = odbcConnect(zrodloDanychODBC)
@@ -121,20 +173,34 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "",
     on.exit({})
     # ewentualne tworzenie nowego testu (jeśli skala obejmuje wiele części egzaminu)
     if (length(skale[[i]]) > 1) {
-      opis = sub("^ewd", rodzajEgzaminu, names(skale)[i])
-      message(" Tworzenie nowego testu: '", opis, "' (może chwilę potrwać...).")
-      idTestow = stworz_test_z_wielu_czesci(rodzajEgzaminu,
-                                            sub(paste0(";", sufiks, "$"), "", skale[[i]]),
-                                            rok, czyEwd, opis, zrodloDanychODBC)
+      opisTestu = paste(rodzajEgzaminu, testyMapa[testy[i]][[1]][1], rok, sep = ";")
+      P = odbcConnect(zrodloDanychODBC)
+      on.exit(odbcClose(P))
+      idTestow = sqlExecute(P, "SELECT id_testu FROM testy WHERE opis = ?",
+                          opisTestu, fetch = TRUE)[, 1]
+      odbcClose(P)
+      on.exit({})
+      if (length(idTestow) == 0) {
+        message(" Tworzenie nowego testu: '", opisTestu, "' (może chwilę potrwać...).")
+        idTestow = stworz_test_z_wielu_czesci(rodzajEgzaminu, skale[[i]],
+                                              rok, czyEwd, opisTestu,
+                                              testyMapa[testy[i]][[1]][2],
+                                              zrodloDanychODBC)
+      }
       # przyłączanie kryteriów do tego testu
       P = odbcConnect(zrodloDanychODBC)
       on.exit(odbcClose(P))
       odbcSetAutoCommit(P, FALSE)
-      kryteria$id_testu = idTestow
-      kryteria = cbind(kryteria, popr_dystraktor = NA)
-      sqlExecute(P, "INSERT INTO testy_kryteria (id_testu, id_kryterium,
-                      kolejnosc, popr_dystraktor) VALUES (?, ?, ?, ?)",
-                 kryteria, fetch = TRUE)
+      wBazie = sqlExecute(P, "SELECT count(id_kryterium) FROM testy_kryteria
+                               WHERE id_testu = ?", idTestow, fetch = TRUE)[1, 1]
+      if (wBazie == 0) {
+        message(" Wypełnianie tablicy 'testy_kryteria' dla testu '", opisTestu, "'.")
+        kryteria$id_testu = idTestow
+        kryteria = cbind(kryteria, popr_dystraktor = NA)
+        sqlExecute(P, "INSERT INTO testy_kryteria (id_testu, id_kryterium,
+                        kolejnosc, popr_dystraktor) VALUES (?, ?, ?, ?)",
+                   kryteria, fetch = TRUE)
+      }
       odbcEndTran(P, TRUE)
       odbcClose(P)
       on.exit({})
