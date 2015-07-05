@@ -9,7 +9,7 @@ Description: Funkcje zapisu danych do bazy ZPD.
 Depends:
   RODBCext (>= 0.2.3)
 Imports:
-  RODBC
+  RODBC, dplyr
 Suggests:
   knitr,
   testthat

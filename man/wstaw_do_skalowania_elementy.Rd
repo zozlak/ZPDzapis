@@ -5,7 +5,7 @@
 \title{Wstawianie danych do tablicy 'skalowania_elementy'}
 \usage{
 wstaw_do_skalowania_elementy(zrodloODBC, idSkali, kolejnosc, numerSkalowania,
-  nazwaParametru, model, wartosc, odchylenie, uwagi = NULL)
+  nazwaParametru, model, wartosc, odchylenie, grupa, uwagi = NULL)
 }
 \arguments{
 \item{zrodloODBC}{źródło danych ODBC.}
@@ -23,6 +23,8 @@ wstaw_do_skalowania_elementy(zrodloODBC, idSkali, kolejnosc, numerSkalowania,
 \item{wartosc}{liczba}
 
 \item{odchylenie}{liczba opisująca odchylenie standardowe parametru.}
+
+\item{grupa}{nazwa wstawianej do bazy grupy}
 
 \item{uwagi}{ciąg znaków}
 }
