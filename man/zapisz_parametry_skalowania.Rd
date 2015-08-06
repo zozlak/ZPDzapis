@@ -2,29 +2,28 @@
 % Please edit documentation in R/zapisz_parametry_skalowania.R
 \name{zapisz_parametry_skalowania}
 \alias{zapisz_parametry_skalowania}
-\title{Zapisywanie parametrow skalowan.}
+\title{Funkcja zapisuje parametry skalowania do bazy danych}
 \usage{
-zapisz_parametry_skalowania(nazwa_skali = NULL, id_testu = NULL,
-  doPrezentacji, parametry, opis, estymacja, rEAP = NULL,
-  zrodloDanychODBC = "EWD")
+zapisz_parametry_skalowania(id_skali = NULL, nazwa_skali = NULL,
+  id_testu = NULL, parametry, rEAP = NULL, numer_skalowania = NULL,
+  grupa = "", zrodloDanychODBC = "EWD")
 }
 \arguments{
+\item{id_skali}{id skali. Gdy id skali nie jest NULL to parametry: nazwa_skali i id_testu nie są brane pod uwagę}
+
 \item{nazwa_skali}{nazwa skali. Kiedy nazwa skali przymuje wartość NULL nie jest
-brana pod uwagę w wyszukiwaniu. Wartość domyślna to NULL.}
+brana pod  uwagę w wyszukiwaniu. Wartość domyślna to NULL.}
 
 \item{id_testu}{id testu. Kiedy id testu przymuje wartość NULL nie jest brana pod
 uwagę w wyszukiwaniu. Wartość domyślna to NULL.}
 
-\item{doPrezentacji}{wartość boolowska określająca, czy wstawiane skalowanie ma być do prezentacji}
-
 \item{parametry}{ramka danych o strukturze zgodnej z tą, w jakiej zwraca oszacowania parametrów funkcja skaluj().}
 
-\item{opis}{opis estymacji}
-
-\item{estymacja}{parametr opisujący metodę estymacji - musi być jedną z wartości
-występujących w tablicy sl_estymacje_parametrow.}
-
 \item{rEAP}{rzetelność empiryczna, która domyśnie wynosi NULL.}
+
+\item{numer_skalowania}{liczba całkowita określająca numer skalowania. Jeżeli wynosi NULL to wartość zostanie określona na podstawie bazy danych.}
+
+\item{grupa}{nazwa grupy, dla której mają być wstawione parametry}
 
 \item{zrodloDanychODBC}{string określający źródło danych. Wartość domyślna to 'EWD'.}
 }
