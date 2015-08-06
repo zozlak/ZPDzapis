@@ -30,27 +30,27 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
             all(czyRasch %in% c(TRUE, FALSE))  , length(czyRasch) == 1,
             all(dopisz %in% c(TRUE, FALSE))    , length(dopisz) == 1,
             is.character(zrodloDanychODBC)     , length(zrodloDanychODBC) == 1)
-  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2014)
+  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2015)
   stopifnot(rodzajEgzaminu %in% c("sprawdzian", "egzamin gimnazjalny", "matura"))
 
   # tworzenie listy ze skalami i powiązanymi z nimi częściami egzaminów
   if (rodzajEgzaminu == "sprawdzian") {
     skale = list(
-      "ewd;s;" = c("")
+      "ewd;s" = c("")
     )
     if (czyRasch) {
-      skale = append(skale, list("ewd;sR;" = c("")))
+      skale = append(skale, list("ewd;sR" = c("")))
     }
   } else if (rodzajEgzaminu == "egzamin gimnazjalny") {
     if (rok < 2012) {
       skale = list(
-        "ewd;gh;" = c("humanistyczna"),
-        "ewd;gm;" = c("matematyczno-przyrodnicza")
+        "ewd;gh" = c("humanistyczna"),
+        "ewd;gm" = c("matematyczno-przyrodnicza")
       )
       if (czyRasch) {
         skale = append(skale, list(
-          "ewd;ghR;" = c("humanistyczna"),
-          "ewd;gmR;" = c("matematyczno-przyrodnicza"))
+          "ewd;ghR" = c("humanistyczna"),
+          "ewd;gmR" = c("matematyczno-przyrodnicza"))
         )
       }
     } else {
@@ -65,9 +65,11 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
       if (czyRasch) {
         skale = append(skale, list(
           "ewd;ghR"   = c("j. polski", "historia i WOS"),
+          "ewd;gh_hR" = c("historia i WOS"),
           "ewd;gh_pR" = c("j. polski"),
           "ewd;gmR"   = c("matematyka", "przedmioty przyrodnicze"),
-          "ewd;gm_mR" = c("matematyka"))
+          "ewd;gm_mR" = c("matematyka"),
+          "ewd;gm_pR" = c("przedmioty przyrodnicze"))
         )
       }
     }
@@ -128,7 +130,9 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
   } else if (length(skaleWBazie) > 0) {
     warning("W bazie istnieją już zarejestrowane skale o opisie:\n ",
             paste0(paste0("'", skaleWBazie, "'"), collapse = ",\n "), ".")
-    skale = skale[!(names(skale) %in% skaleWBazie)]
+    maska = !(names(skale) %in% skaleWBazie)
+    skale = skale[maska]
+    testy = testy[maska]
     if (length(skale) == 0) {
       return(vector(mode = "numeric", length = 0))
     }

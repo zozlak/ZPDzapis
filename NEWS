@@ -1,4 +1,16 @@
 --------------------
+Zmiany w ZPDzapis 0.2.0.0000 (6.08.2015)
+
+Naprawione błędy:
+- stworz_skale_ewd() akceptuje rok 2015 i nie wstawia niepotrzebnych średników
+  w nazwy skal sprawdzianu i egz. gimn.;
+- stworz_skale_ewd() poprawnie obsługuje tworznie testów z wielu części
+  w sytuacji, gdy wywołana z argumentem dopisz = TRUE i pewne skale już są
+  w bazie;
+- stworz_skale_ewd() tworzy (gdy proszona) pełen zestaw skal raschowych dla
+  nowej formuły egz. gimn., aby było gdzie przechowywać normy ekwikwantylowe;
+
+--------------------
 Zmiany w ZPDzapis 0.1.0.0000 (20.06.2015)
 
 Nowe funkcje:
