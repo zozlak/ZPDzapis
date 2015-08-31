@@ -19,7 +19,7 @@ znajdz_pseudokryteria = function(kryteria, opisy, P){
 		if(sumy[i]){
 			next
 		}
-		wiersz = kryteria[i, ]
+		wiersz = sort(kryteria[i, ])
 		tmp = match(paste(wiersz[order(wiersz)], collapse='|'), pkrytBaza)
 		if(!is.na(tmp)){
 			idPkryt[i] = as.numeric(names(pkrytBaza)[tmp])
@@ -33,7 +33,7 @@ znajdz_pseudokryteria = function(kryteria, opisy, P){
 			if(opisy[i] %in% opisyBaza){
 				stop(sprintf('w wierszu %d trzeba utworzyc nowe pseudokryterium, jednak podany dla niego opis wystepuje juz w bazie', i))
 			}
-			
+
 			idPkryt[i] = .sqlQuery(P, "SELECT nextval('pseudokryteria_id_pseudokryterium_seq')")[1, 1]
 			zap = "INSERT INTO pseudokryteria_oceny (id_pseudokryterium, opis) VALUES (?, ?)"
 			.sqlQuery(P, zap, list(idPkryt[i], opisy[i]))
@@ -45,6 +45,6 @@ znajdz_pseudokryteria = function(kryteria, opisy, P){
 				.sqlQuery(P, zap, list(idPkryt[i], j))
 			}
 		}
-	}	
+	}
 	return(idPkryt)
 }
