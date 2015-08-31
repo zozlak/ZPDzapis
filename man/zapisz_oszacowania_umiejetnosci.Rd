@@ -34,8 +34,7 @@ wartość 'EAP'.}
 być zapisane.}
 }
 \value{
-Funkcja zwraca ramkę danych, która podana do funkcji
-\code{\link[ZPDzapis]{edytuj_skale}} usunie z niej zbędne (pseudo)kryteria.
+Funkcja nic nie zwraca
 }
 \description{
 Funkcja zapisuje oszacowania umiejętności uczniów do bazy danych.
