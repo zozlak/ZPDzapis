@@ -2,25 +2,37 @@
 % Please edit documentation in R/zapisz_skalowanie.R
 \name{zapisz_skalowanie}
 \alias{zapisz_skalowanie}
-\title{Zapisz obiekt skalowania}
+\title{Zapis wynikow skalowania do bazy}
 \usage{
-zapisz_skalowanie(skalowanie, opisSkalowania, nadpisz = FALSE,
-  zrodloDanychODBC = "EWD_grzes")
+zapisz_skalowanie(nazwaPliku, doPrezentacji = FALSE, nadpisz = FALSE,
+  zrodloDanychODBC = "ewd")
 }
 \arguments{
-\item{skalowanie}{wynik działania fukcji skaluj z dodanym parametrem id_skali}
+\item{nazwaPliku}{ciąg znaków - nazwa pliku .RData, zawierającego wyniki
+skalowania (typowo zapisanego przez funkcję \code{\link[EWDskale]{skaluj_spr}},
+\code{\link[EWDskale]{skaluj_egz_gimn}},
+\code{\link[EWDskale]{skaluj_egz_gimn_rasch}},
+\code{\link[EWDskale]{skaluj_matura}} lub
+\code{\link[EWDskale]{skaluj_matura_rasch}})}
 
-\item{opisSkalowania}{lista zawierająca dane skalowania}
+\item{doPrezentacji}{wartość logiczna - jeśli tworzone będzie nowe skalowanie,
+to czy ma ono zostać oznaczone jako 'do przezentacji'?}
 
-\item{nadpisz}{czy elementy skali powinny być nadpisane}
+\item{nadpisz}{wartość logiczna - czy elementy skali powinny być nadpisane?}
 
-\item{zrodloDanychODBC}{opcjonalnie nazwa źródła danych ODBC, dającego dostęp do bazy
-(domyślnie "EWD")}
+\item{zrodloDanychODBC}{opcjonalnie ciąg znaków - nazwa źródła danych ODBC,
+dającego dostęp do bazy (domyślnie "ewd")}
 }
 \value{
 funkcja nic nie zwraca
 }
 \description{
-Zapis skalowania do bazy danych
+Funkcja zapisuje do bazy wyniki skalowania: wartości parametrów, oszacowania
+umiejętności uczniów, ew. normy (skale raschowe). W miarę potrzeby tworzy
+nowe skalowanie w bazie, lub dopisuje do/nadpisuje już istniejące(go).
+}
+\details{
+W kwestii sposobu działania parametru \code{nadpisz}, patrz sekcja
+description pomocy do funkcji \code{\link{zapisz_pojedyncze_skalowanie}}.
 }
 

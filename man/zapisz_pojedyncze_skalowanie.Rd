@@ -2,25 +2,47 @@
 % Please edit documentation in R/zapisz_skalowanie.R
 \name{zapisz_pojedyncze_skalowanie}
 \alias{zapisz_pojedyncze_skalowanie}
-\title{Zapis pojedynczego skalowania do bazy danych}
+\title{Zapis wynikow skalowania do bazy}
 \usage{
-zapisz_pojedyncze_skalowanie(skalowanie, opisSkalowania, nadpisz = FALSE,
-  zrodloDanychODBC = "EWD_grzes")
+zapisz_pojedyncze_skalowanie(x, doPrezentacji = FALSE, nadpisz = FALSE,
+  zrodloDanychODBC = "ewd", proba = -1)
 }
 \arguments{
-\item{skalowanie}{wynik działania fukcji skaluj z dodanym parametrem id_skali}
+\item{x}{obiekt klasy \code{wynikiSkalowania}}
 
-\item{opisSkalowania}{lista zawierająca dane skalowania}
+\item{doPrezentacji}{wartość logiczna - jeśli tworzone będzie nowe skalowanie,
+to czy ma ono zostać oznaczone jako 'do przezentacji'?}
 
-\item{nadpisz}{czy elementy skali powinny być nadpisane}
+\item{nadpisz}{wartość logiczna - czy elementy skali powinny być nadpisane?}
 
-\item{zrodloDanychODBC}{opcjonalnie nazwa źródła danych ODBC, dającego dostęp do bazy
-(domyślnie "EWD")}
+\item{zrodloDanychODBC}{opcjonalnie ciąg znaków - nazwa źródła danych ODBC,
+dającego dostęp do bazy (domyślnie "ewd")}
+
+\item{proba}{opcjonalnie liczba natrualna - wielkość próby, jaka ma być
+wylosowana z elementu \code{skalowanie_obserwacje} przed dokonaniem zapisu;
+przydatne (tylko) do testów działania funkcji}
 }
 \value{
 funkcja nic nie zwraca
 }
 \description{
-Funkcja zapisuje pojedyncze skalowanie do bazy danych
+Funkcja zapisuje do bazy wyniki pojedynczego skalowania
+}
+\details{
+Jeśli argument \code{nadpisz} ma wartość \code{TRUE} i w bazie jest już
+zapisane dane skalowanie, to funkcja wymaga, aby obiekt \code{x} miał
+wszystkie elementy, które już są zapisane w bazie. Np. jeśli w bazie zapisano
+powiązane z danym skalowaniem parametry, \code{x} musi zawierać element
+\code{skalowania_elementy} itd. Wszystkie wpisy w bazie, powiązane z danym
+skalowaniem zostaną w takiej sytuacji usunięte i nadpisane nowymi.
+
+Jeśli argument \code{nadpisz} ma wartość \code{FALSE} i w bazie jest już
+zapisane dane skalowanie, funkcja najpierw sprawdzi, czy dane przekazywane do
+zapisania, które odnoszą się do tabeli \code{skalowania_grupy} są dokładnie
+takie same, jak dane już zapisane w bazie. Jeśli tak, spróbuje dopisać dane
+odnoszące się do tablic \code{skalowania_elementy},
+\code{skalowania_obserwcje}, i \code{normy} do danych już istniejących
+w bazie. Jeśli napotka przy tym jakieś konflikty, zaniecha zapisu
+jakichkolwiek danych.
 }
 
