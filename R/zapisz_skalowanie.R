@@ -102,7 +102,7 @@ zapisz_pojedyncze_skalowanie = function(x, doPrezentacji = FALSE,
   # sprawdzanie, czy we wszystkich elementach mamy to samo skalowanie
   message("  Kontrola poprawności argumentów.")
   for (i in 1:length(x)) {
-    if (names(x)[i] == "usunieteKryteria") {
+    if (names(x)[i] == "usunieteKryteria" | is.null(x[[i]])) {
       next
     }
     czy_to_samo_skalowanie(x[[i]], idSkali, skalowanie, names(x)[i])
