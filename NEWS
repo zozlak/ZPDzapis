@@ -1,5 +1,11 @@
 --------------------
-Zmiany w ZPDzapis 0.3.2 (09.09.2015)
+Zmiany w ZPDzapis 0.3.2 (15.09.2015)
+
+Nowe funkcje:
+- stworz_nowe_wskazniki_ewd() - pozwala utworzyć w bazie nowe wskaźniki na
+  posobienstwo wskazanych, już istniejących;
+- zapisz_wskazniki_ewd() - obsługuje zapis do bazy wyników działania funkcji
+  przygotuj_wsk_ewd() z pakietu EWDwskazniki;
 
 Nowe funkcjonalności:
 - zapisz_skalowanie() przepisane na nową strukturę wyników funkcji

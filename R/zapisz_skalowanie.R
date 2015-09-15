@@ -12,21 +12,39 @@
 #' @param doPrezentacji wartość logiczna - jeśli tworzone będzie nowe skalowanie,
 #' to czy ma ono zostać oznaczone jako 'do przezentacji'?
 #' @param nadpisz wartość logiczna - czy elementy skali powinny być nadpisane?
+#' @param oszacowaniaDoCopy wartość logiczna - czy zamiast wczytywać oszacowania
+#' umiejętności do tablicy \code{skalowania_obserwacje} przy pomocy poleceń
+#' \code{INSERT} przez ODBC (jak wszystko inne), wygenerować plik csv, który
+#' będzie można wczytać do bazy komendą \code{COPY} przez \code{psql}?
 #' @param zrodloDanychODBC opcjonalnie ciąg znaków - nazwa źródła danych ODBC,
 #' dającego dostęp do bazy (domyślnie "ewd")
 #' @details
 #' W kwestii sposobu działania parametru \code{nadpisz}, patrz sekcja
 #' description pomocy do funkcji \code{\link{zapisz_pojedyncze_skalowanie}}.
+#'
+#' Oszacowania umiejętności domyślnie (\code{oszacowaniaDoCopy = TRUE}) nie są
+#' wczytywane do bazy, gdyż trwałoby to koszmarnie długo (po 4-6 h na część
+#' egzaminu). Zamiast tego zapisywany jest na dysku skompresowany (w formacie
+#' zip) plik csv (w formacie zgodnym z wynikiem działania
+#' \code{\link{write.csv}}), który należy przenieść na Odrę i stamtąd wczytać go
+#' do bazy komendą \code{COPY} programu \code{psql}.
+#'
+#' Uwaga! Jeśli \code{oszacowaniaDoCopy = TRUE} i \code{nadpisz = TRUE}, to
+#' w ramach wywołania funkcji usunięte zostaną dotychczasowe wartości tablicy
+#' \code{skalowania_obserwacje} powiązane z danymi skalami-skalowaniami, ale
+#' nowe nie zostaną wczytane automatycznie.
 #' @return funkcja nic nie zwraca
 #' @export
 zapisz_skalowanie = function(nazwaPliku, doPrezentacji = FALSE, nadpisz = FALSE,
-                             zrodloDanychODBC = "ewd"){
+                             oszacowaniaDoCopy = TRUE, zrodloDanychODBC = "ewd"){
   stopifnot(is.character(nazwaPliku), length(nazwaPliku) == 1,
             is.logical(nadpisz), length(nadpisz) == 1,
             is.logical(doPrezentacji), length(doPrezentacji) == 1,
+            is.logical(oszacowaniaDoCopy), length(oszacowaniaDoCopy) == 1,
             is.character(zrodloDanychODBC), length(zrodloDanychODBC) == 1)
   stopifnot(file.exists(nazwaPliku), nadpisz %in% c(TRUE, FALSE),
-            doPrezentacji %in% c(TRUE, FALSE))
+            doPrezentacji %in% c(TRUE, FALSE),
+            oszacowaniaDoCopy %in% c(TRUE, FALSE))
 
   obiekty = load(nazwaPliku)
   message("Wczytano plik '", nazwaPliku, "'.")
@@ -38,7 +56,8 @@ zapisz_skalowanie = function(nazwaPliku, doPrezentacji = FALSE, nadpisz = FALSE,
     }
     message(" Rozpoczęto zapis wyników skalowania konstruktu '", i, "'.")
     lapply(x, zapisz_pojedyncze_skalowanie, doPrezentacji = doPrezentacji,
-           nadpisz = nadpisz, zrodloDanychODBC = zrodloDanychODBC)
+           nadpisz = nadpisz, oszacowaniaDoCopy = oszacowaniaDoCopy,
+           zrodloDanychODBC = zrodloDanychODBC)
   }
   # koniec
   invisible(NULL)
@@ -50,6 +69,10 @@ zapisz_skalowanie = function(nazwaPliku, doPrezentacji = FALSE, nadpisz = FALSE,
 #' @param doPrezentacji wartość logiczna - jeśli tworzone będzie nowe skalowanie,
 #' to czy ma ono zostać oznaczone jako 'do przezentacji'?
 #' @param nadpisz wartość logiczna - czy elementy skali powinny być nadpisane?
+#' @param oszacowaniaDoCopy wartość logiczna - czy zamiast wczytywać oszacowania
+#' umiejętności do tablicy \code{skalowania_obserwacje} przy pomocy poleceń
+#' \code{INSERT} przez ODBC (jak wszystko inne), wygenerować plik csv, który
+#' będzie można wczytać do bazy komendą \code{COPY} przez \code{psql}?
 #' @param zrodloDanychODBC opcjonalnie ciąg znaków - nazwa źródła danych ODBC,
 #' dającego dostęp do bazy (domyślnie "ewd")
 #' @param proba opcjonalnie liczba natrualna - wielkość próby, jaka ma być
@@ -71,20 +94,34 @@ zapisz_skalowanie = function(nazwaPliku, doPrezentacji = FALSE, nadpisz = FALSE,
 #' \code{skalowania_obserwcje}, i \code{normy} do danych już istniejących
 #' w bazie. Jeśli napotka przy tym jakieś konflikty, zaniecha zapisu
 #' jakichkolwiek danych.
+#'
+#' Oszacowania umiejętności domyślnie (\code{oszacowaniaDoCopy = TRUE}) nie są
+#' wczytywane do bazy, gdyż trwałoby to koszmarnie długo (po 4-6 h na część
+#' egzaminu). Zamiast tego zapisywany jest na dysku skompresowany (w formacie
+#' zip) plik csv (w formacie zgodnym z wynikiem działania
+#' \code{\link{write.csv}}), który należy przenieść na Odrę i stamtąd wczytać go
+#' do bazy komendą \code{COPY} programu \code{psql}.
+#'
+#' Uwaga! Jeśli \code{oszacowaniaDoCopy = TRUE} i \code{nadpisz = TRUE}, to
+#' w ramach wywołania funkcji usunięte zostaną dotychczasowe wartości tablicy
+#' \code{skalowania_obserwacje} powiązane z danymi skalami-skalowaniami, ale
+#' nowe nie zostaną wczytane automatycznie.
 #' @return funkcja nic nie zwraca
 #' @export
 zapisz_pojedyncze_skalowanie = function(x, doPrezentacji = FALSE,
-                                        nadpisz = FALSE,
+                                        nadpisz = FALSE, oszacowaniaDoCopy = TRUE,
                                         zrodloDanychODBC = "ewd", proba = -1){
   stopifnot(is.list(x), "wynikiSkalowania" %in% class(x),
             is.logical(nadpisz), length(nadpisz) == 1,
             is.logical(doPrezentacji), length(doPrezentacji) == 1,
+            is.logical(oszacowaniaDoCopy), length(oszacowaniaDoCopy) == 1,
             is.character(zrodloDanychODBC), length(zrodloDanychODBC) == 1,
             is.numeric(proba), length(proba) == 1)
   stopifnot("skalowania" %in% names(x),
             "skalowania_grupy" %in% names(x),
             any(c("skalowania_elementy", "skalowania_obserwacje") %in% names(x)),
             nadpisz %in% c(TRUE, FALSE), doPrezentacji %in% c(TRUE, FALSE),
+            oszacowaniaDoCopy %in% c(TRUE, FALSE),
             as.integer(proba) == proba, proba == -1 | proba > 0)
   stopifnot(is.data.frame(x$skalowania))
   stopifnot(nrow(x$skalowania) == 1)
@@ -148,20 +185,20 @@ zapisz_pojedyncze_skalowanie = function(x, doPrezentacji = FALSE,
     }
     # jeśli powyżej nie wybuchło, to kasujemy szerokim frontem
     kasowanie = list(
-      skalowania =
-        sqlExecute(P, "DELETE FROM skalowania WHERE id_skali = ? AND skalowanie = ?",
-                   list(idSkali, skalowanie), errors = TRUE),
-      skalowania_grupy =
-        sqlExecute(P, "DELETE FROM skalowania_grupy WHERE id_skali = ? AND skalowanie = ?",
+      skalowania_obserwacje =
+        sqlExecute(P, "DELETE FROM skalowania_obserwacje WHERE id_skali = ? AND skalowanie = ?",
                    list(idSkali, skalowanie), errors = TRUE),
       skalowania_elementy =
         sqlExecute(P, "DELETE FROM skalowania_elementy WHERE id_skali = ? AND skalowanie = ?",
                    list(idSkali, skalowanie), errors = TRUE),
-      skalowania_obserwacje =
-        sqlExecute(P, "DELETE FROM skalowania_obserwacje WHERE id_skali = ? AND skalowanie = ?",
-                   list(idSkali, skalowanie), errors = TRUE),
       normy =
         sqlExecute(P, "DELETE FROM normy WHERE id_skali = ? AND skalowanie = ?",
+                   list(idSkali, skalowanie), errors = TRUE),
+      skalowania_grupy =
+        sqlExecute(P, "DELETE FROM skalowania_grupy WHERE id_skali = ? AND skalowanie = ?",
+                   list(idSkali, skalowanie), errors = TRUE),
+      skalowania =
+        sqlExecute(P, "DELETE FROM skalowania WHERE id_skali = ? AND skalowanie = ?",
                    list(idSkali, skalowanie), errors = TRUE)
     )
     baza = lapply(baza, function(x) {return(x[0, ])})
@@ -279,10 +316,18 @@ zapisz_pojedyncze_skalowanie = function(x, doPrezentacji = FALSE,
         x$skalowania_obserwacje[sample(1:nrow(x$skalowania_obserwacje),
                                        min(proba, nrow(x$skalowania_obserwacje))), ]
     }
-    w = sqlExecute(P, uloz_insert_z_ramki("skalowania_obserwacje",
-                                          x$skalowania_obserwacje),
-                   x$skalowania_obserwacje, errors = TRUE)
-    message("   Zapisano oszacowania ", nrow(x$skalowania_obserwacje), " zdających.")
+    if (oszacowaniaDoCopy) {
+      nazwaPliku = paste0("oszacowania_", x$skalowania$id_skali, "_",
+                          x$skalowania$skalowanie, ".csv")
+      write.csv(x$skalowania_obserwacje, nazwaPliku, row.names = FALSE, na = "null")
+      zip(sub("csv$", "zip", nazwaPliku), nazwaPliku)
+      file.remove(nazwaPliku)
+    } else {
+      w = sqlExecute(P, uloz_insert_z_ramki("skalowania_obserwacje",
+                                            x$skalowania_obserwacje),
+                     x$skalowania_obserwacje, errors = TRUE)
+      message("   Zapisano oszacowania ", nrow(x$skalowania_obserwacje), " zdających.")
+    }
   }
 
   # koniec

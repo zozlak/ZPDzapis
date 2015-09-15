@@ -5,7 +5,7 @@
 \title{Zapis wynikow skalowania do bazy}
 \usage{
 zapisz_skalowanie(nazwaPliku, doPrezentacji = FALSE, nadpisz = FALSE,
-  zrodloDanychODBC = "ewd")
+  oszacowaniaDoCopy = TRUE, zrodloDanychODBC = "ewd")
 }
 \arguments{
 \item{nazwaPliku}{ciąg znaków - nazwa pliku .RData, zawierającego wyniki
@@ -19,6 +19,11 @@ skalowania (typowo zapisanego przez funkcję \code{\link[EWDskale]{skaluj_spr}},
 to czy ma ono zostać oznaczone jako 'do przezentacji'?}
 
 \item{nadpisz}{wartość logiczna - czy elementy skali powinny być nadpisane?}
+
+\item{oszacowaniaDoCopy}{wartość logiczna - czy zamiast wczytywać oszacowania
+umiejętności do tablicy \code{skalowania_obserwacje} przy pomocy poleceń
+\code{INSERT} przez ODBC (jak wszystko inne), wygenerować plik csv, który
+będzie można wczytać do bazy komendą \code{COPY} przez \code{psql}?}
 
 \item{zrodloDanychODBC}{opcjonalnie ciąg znaków - nazwa źródła danych ODBC,
 dającego dostęp do bazy (domyślnie "ewd")}
@@ -34,5 +39,17 @@ nowe skalowanie w bazie, lub dopisuje do/nadpisuje już istniejące(go).
 \details{
 W kwestii sposobu działania parametru \code{nadpisz}, patrz sekcja
 description pomocy do funkcji \code{\link{zapisz_pojedyncze_skalowanie}}.
+
+Oszacowania umiejętności domyślnie (\code{oszacowaniaDoCopy = TRUE}) nie są
+wczytywane do bazy, gdyż trwałoby to koszmarnie długo (po 4-6 h na część
+egzaminu). Zamiast tego zapisywany jest na dysku skompresowany (w formacie
+zip) plik csv (w formacie zgodnym z wynikiem działania
+\code{\link{write.csv}}), który należy przenieść na Odrę i stamtąd wczytać go
+do bazy komendą \code{COPY} programu \code{psql}.
+
+Uwaga! Jeśli \code{oszacowaniaDoCopy = TRUE} i \code{nadpisz = TRUE}, to
+w ramach wywołania funkcji usunięte zostaną dotychczasowe wartości tablicy
+\code{skalowania_obserwacje} powiązane z danymi skalami-skalowaniami, ale
+nowe nie zostaną wczytane automatycznie.
 }
 
