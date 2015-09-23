@@ -215,6 +215,7 @@ zapisz_pojedyncze_skalowanie = function(x, doPrezentacji = FALSE,
   # szukanie konfliktow przy nadpisz=FALSE
   if (!nadpisz) {
     wspolne = setdiff(intersect(wBazie, wX), "skalowania")
+    # skalowania_grupy
     if ("skalowania_grupy" %in% wspolne) {
       baza$skalowania_grupy$grupa[is.na(baza$skalowania_grupy$grupa)] = ""  # obchodzenie narowów RODBC
       temp = merge(baza$skalowania_grupy, x$skalowania_grupy)
@@ -227,25 +228,43 @@ zapisz_pojedyncze_skalowanie = function(x, doPrezentacji = FALSE,
              "i nie są one zgodne z przekazanymi do zapisania.")
       }
     }
-    wspolne = setdiff(wspolne, "skalowania_grupy")
-    mapply(
-      function(x, y, z) {
-        if (!("grupa" %in% names(y))) {
-          stop("Element '", z, "' musi zawierać kolumnę 'grupa'.")
-        }
-        y$grupa[y$grupa == ""] = NA
-        temp = merge(x, y)
-        if (nrow(temp) != (nrow(x) + nrow(y))) {
-          stop("W elemencie '", z, "' wykryto konflikty z danymi, które są ",
-               "już zapisane w bazie.")
-        } else {
-          invisible(NULL)
-        }
-      },
-      baza[wspolne],
-      x[wspolne],
-      as.list(wspolne)
-    )
+    # skalowania_elementy
+    if ("skalowania_elementy" %in% wspolne) {
+      temp = x$skalowania_elementy
+      if (!("grupa" %in% names(temp))) {
+        stop("Element 'skalowania_elementy' musi zawierać kolumnę 'grupa'.")
+      }
+      temp$grupa[temp$grupa == ""] = NA
+      temp = merge(baza$skalowania_elementy, temp)
+      if (nrow(temp) != nrow(baza$skalowania_elementy) |
+          nrow(temp) != nrow(x$skalowania_elementy)) {
+        stop("W elemencie 'skalowania_elementy' wykryto konflikty z danymi, ",
+             "które są już zapisane w bazie.")
+      }
+      x$skalowania_elementy = NULL
+    }
+    # normy
+    if ("normy" %in% wspolne) {
+      temp = x$normy
+      if (!("grupa" %in% names(temp))) {
+        stop("Element 'normy' musi zawierać kolumnę 'grupa'.")
+      }
+      temp$grupa[temp$grupa == ""] = NA
+      temp = merge(baza$normy, temp)
+      if (nrow(temp) != nrow(baza$normy) | nrow(temp) != nrow(x$normy)) {
+        stop("W elemencie 'normy' wykryto konflikty z danymi, ",
+             "które są już zapisane w bazie.")
+      }
+      x$normy = NULL
+    }
+    # skalowania_obserwacje
+    if ("skalowania_obserwacje" %in% wspolne) {
+      if (any(x$skalowania_obserwacje$id_obserwacji %in%
+              baza$skalowania_obserwacje$id_obserwacji)) {
+        stop("W elemencie 'skalowania_obserwacje' występują zdający, których ",
+             "wyniki są już zapisane w bazie.")
+      }
+    }
   }
 
   # usuwanie kryteriów
