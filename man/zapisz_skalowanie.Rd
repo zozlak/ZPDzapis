@@ -47,6 +47,13 @@ zip) plik csv (w formacie zgodnym z wynikiem działania
 \code{\link{write.csv}}), który należy przenieść na Odrę i stamtąd wczytać go
 do bazy komendą \code{COPY} programu \code{psql}.
 
+Uwaga! Przy zapisie do pliku csv R potrafi perfidnie zastosować notację
+naukową do \code{id_obserwacji}, na szczęścietylko wtedy, gdy nie powoduje to
+utraty precyzji. Jeśli takie zdarzenie nastąpi, \code{psql} rzuci błędem
+przy próbie wczytania danych. Póki co jedynym rozwiązaniem jest ręczne
+poprawienie w pliku csv takiej wartości na legalną liczbę całkowitą
+i odpalenie \code{psql} ponownie.
+
 Uwaga! Jeśli \code{oszacowaniaDoCopy = TRUE} i \code{nadpisz = TRUE}, to
 w ramach wywołania funkcji usunięte zostaną dotychczasowe wartości tablicy
 \code{skalowania_obserwacje} powiązane z danymi skalami-skalowaniami, ale
