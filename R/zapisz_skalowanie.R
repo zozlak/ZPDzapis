@@ -223,6 +223,8 @@ zapisz_pojedyncze_skalowanie = function(x, doPrezentacji = FALSE,
     }
     # skalowania_elementy
     if ("skalowania_elementy" %in% wspolne) {
+      x$skalowania_elementy$parametr = sub("^dyskryminacja", "a",
+                                           x$skalowania_elementy$parametr)
       temp = x$skalowania_elementy
       if (!("grupa" %in% names(temp))) {
         stop("Element 'skalowania_elementy' musi zawierać kolumnę 'grupa'.")
@@ -254,8 +256,10 @@ zapisz_pojedyncze_skalowanie = function(x, doPrezentacji = FALSE,
     if ("skalowania_obserwacje" %in% wspolne) {
       if (any(x$skalowania_obserwacje$id_obserwacji %in%
               baza$skalowania_obserwacje$id_obserwacji)) {
-        stop("W elemencie 'skalowania_obserwacje' występują zdający, których ",
-             "wyniki są już zapisane w bazie.")
+        x$skalowania_obserwacje = NULL
+        warning("W elemencie 'skalowania_obserwacje' występują zdający, których ",
+                "wyniki są już zapisane w bazie. Dane z tego elementu zostaną ",
+                "pominięte przy zapisie.", immediate. = TRUE)
       }
     }
   }
