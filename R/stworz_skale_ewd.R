@@ -74,28 +74,24 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
       }
     }
   } else if (rodzajEgzaminu == "matura") {
-    if (rok < 2015) {
-      skale = list(
-        "ewd;m_h"  = c("j. polski podstawowa", "j. polski rozszerzona",
-                        "historia podstawowa",  "historia rozszerzona",
-                        "WOS podstawowa",       "WOS rozszerzona"),
-        "ewd;m_jp" = c("j. polski podstawowa", "j. polski rozszerzona"),
-        "ewd;m_m"  = c("matematyka podstawowa", "matematyka rozszerzona"),
-        "ewd;m_mp" = c("matematyka podstawowa",  "matematyka rozszerzona",
-                        "biologia podstawowa",    "biologia rozszerzona",
-                        "chemia podstawowa",      "chemia rozszerzona",
-                        "fizyka podstawowa",      "fizyka rozszerzona",
-                        "geografia podstawowa",   "geografia rozszerzona",
-                        "informatyka podstawowa", "informatyka rozszerzona")
+    skale = list(
+      "ewd;m_h"  = c("j. polski podstawowa", "j. polski rozszerzona",
+                     "historia podstawowa",  "historia rozszerzona",
+                     "WOS podstawowa",       "WOS rozszerzona"),
+      "ewd;m_jp" = c("j. polski podstawowa", "j. polski rozszerzona"),
+      "ewd;m_m"  = c("matematyka podstawowa", "matematyka rozszerzona"),
+      "ewd;m_mp" = c("matematyka podstawowa",  "matematyka rozszerzona",
+                     "biologia podstawowa",    "biologia rozszerzona",
+                     "chemia podstawowa",      "chemia rozszerzona",
+                     "fizyka podstawowa",      "fizyka rozszerzona",
+                     "geografia podstawowa",   "geografia rozszerzona",
+                     "informatyka podstawowa", "informatyka rozszerzona")
+    )
+    if (czyRasch) {
+      skale = append(skale, list(
+        "ewd;m_jpR" = c("j. polski podstawowa", "j. polski rozszerzona"),
+        "ewd;m_mR"  = c("matematyka podstawowa", "matematyka rozszerzona"))
       )
-      if (czyRasch) {
-        skale = append(skale, list(
-          "ewd;m_jpR" = c("j. polski podstawowa", "j. polski rozszerzona"),
-          "ewd;m_mR"  = c("matematyka podstawowa", "matematyka rozszerzona"))
-        )
-      }
-    } else {
-      stop("Rok 2015 jeszcze nie obsługiwany.")
     }
   }
   testy = sub("R$", "", sub("^ewd;", "", names(skale)))

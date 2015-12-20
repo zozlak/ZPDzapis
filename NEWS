@@ -1,17 +1,30 @@
 --------------------
-Zmiany w ZPDzapis 0.3.0.0000 (31.08.2015)
+Zmiany w ZPDzapis 0.3.2 (15.09.2015)
+
+Nowe funkcje:
+- stworz_nowe_wskazniki_ewd() - pozwala utworzyć w bazie nowe wskaźniki na
+  posobienstwo wskazanych, już istniejących;
+- zapisz_wskazniki_ewd() - obsługuje zapis do bazy wyników działania funkcji
+  przygotuj_wsk_ewd() z pakietu EWDwskazniki;
+
+Nowe funkcjonalności:
+- zapisz_skalowanie() przepisane na nową strukturę wyników funkcji
+  skaluj_egzamin();
+
+--------------------
+Zmiany w ZPDzapis 0.3.1 (31.08.2015)
 
 Naprawione błędy:
 - znajdz_pseudokryteria() teraz sortuje kryteria zanim będzie ich szukać;
 
 --------------------
-Zmiany w ZPDzapis 0.3.0.0000 (6.08.2015)
+Zmiany w ZPDzapis 0.3.0 (6.08.2015)
 
 Nowe funkcje:
 - zapisz_normy() ;
 
 --------------------
-Zmiany w ZPDzapis 0.2.0.0000 (6.08.2015)
+Zmiany w ZPDzapis 0.2.0 (6.08.2015)
 
 Naprawione błędy:
 - stworz_skale_ewd() akceptuje rok 2015 i nie wstawia niepotrzebnych średników
@@ -23,7 +36,7 @@ Naprawione błędy:
   nowej formuły egz. gimn., aby było gdzie przechowywać normy ekwikwantylowe;
 
 --------------------
-Zmiany w ZPDzapis 0.1.0.0000 (20.06.2015)
+Zmiany w ZPDzapis 0.1.0 (20.06.2015)
 
 Nowe funkcje:
 - stworz_skale_ewd() - pozwala wygodnie i bez zbędnego myślenia stworzyć skale
@@ -39,19 +52,19 @@ Naprawione błędy:
 - Funkcja stworz_test_z_wielu_czesci() poprawnie zamyka połączenie ODBC.
 
 --------------------
-Zmiany w ZPDzapis 0.0.0.9200 (02.06.2015)
+Zmiany w ZPDzapis 0.0.0.92 (02.06.2015)
 
 Naprawione błędy:
 - Poprawki warunków w stopifnot() w stworz_skale().
 
 --------------------
-Zmiany w ZPDzapis 0.0.0.9100 (27.04.2015)
+Zmiany w ZPDzapis 0.0.0.91 (27.04.2015)
 
 Zmiany:
 - Dopasowanie kodu funkcji stworz_skale() do zmian w strukturze bazy.
 
 --------------------
-Zmiany w ZPDzapis 0.0.0.9000 (17.02.2015)
+Zmiany w ZPDzapis 0.0.0.90 (17.02.2015)
 
 - Funkcje przeniesione z pakietu ZPD:
   - stworz_skale();
