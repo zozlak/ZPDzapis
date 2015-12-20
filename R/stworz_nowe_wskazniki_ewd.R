@@ -64,19 +64,22 @@ stworz_nowe_wskazniki_ewd = function(wskaznikiWzorce, wyrazeniaZmienWskaznik,
   wskaznikiWzor = list(
     sl_wskazniki =
       sqlExecute(P, "SELECT * FROM sl_wskazniki WHERE rodzaj_wsk = 'ewd' AND wskaznik = ?",
-                              list(wskaznikiWzorce), fetch = TRUE, errors = TRUE),
+                 list(wskaznikiWzorce), fetch = TRUE, errors = TRUE, stringsAsFactors = FALSE),
     sl_wskazniki_typy_szkol =
       sqlExecute(P, "SELECT * FROM sl_wskazniki_typy_szkol WHERE rodzaj_wsk = 'ewd' AND wskaznik = ?",
-                 list(wskaznikiWzorce), fetch = TRUE, errors = TRUE),
+                 list(wskaznikiWzorce), fetch = TRUE, errors = TRUE, stringsAsFactors = FALSE),
     sl_kategorie_lu =
       sqlExecute(P, "SELECT * FROM sl_kategorie_lu WHERE rodzaj_wsk = 'ewd' AND wskaznik = ?",
-                 list(wskaznikiWzorce), fetch = TRUE, errors = TRUE)
+                 list(wskaznikiWzorce), fetch = TRUE, errors = TRUE, stringsAsFactors = FALSE)
   )
   if (nrow(wskaznikiWzor$sl_wskazniki) < length(wskaznikiWzorce)) {
     stop("W bazie nie istnieją wskaźniki: '",
          paste0(setdiff(wskaznikiWzorce, wskaznikiWzor$wskaznik), collapse = "', '"),
          "'.")
   }
+  # Obchodzimy głupie zachowania sqlGetResults
+  wskaznikiWzor$sl_wskazniki_typy_szkol$typ_szkoly =
+    sub("^TRUE$", "T", wskaznikiWzor$sl_wskazniki_typy_szkol$typ_szkoly)
   # modyfikacje
   if (!is.null(wyrazeniaZmienNazwy)) {
     for (i in wyrazeniaZmienNazwy) {
