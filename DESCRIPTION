@@ -7,13 +7,14 @@ Authors@R: c(
   person("Tomasz", "Zoltak", , "tomek@zozlak.org", role = c("aut")))
 Description: Funkcje zapisu danych do bazy ZPD.
 Depends:
-  RODBCext (>= 0.2.3)
+    RODBCext (>= 0.2.3)
 Imports:
-  RODBC
+    RODBC
 Suggests:
-  knitr,
-  testthat
+    knitr,
+    testthat
 License: MIT + file LICENSE
 LazyData: true
 Encoding: UTF-8
 VignetteBuilder: knitr
+RoxygenNote: 5.0.1

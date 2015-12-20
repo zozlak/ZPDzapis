@@ -12,7 +12,7 @@
 #' @param wyrazeniaZmienWskaznik dwuelementowy wektor ciągów znaków: pierwszy
 #' element zostanie podany jako argument \code{pattern}, a drugi jako argument
 #' \code{replace} do funkcji \code{\link{sub}} wywołanej na wartościach
-#' argumentu \code{wyrazeniaZmienWskaznik}, w celu utworzenia identyfikatorów
+#' argumentu \code{wskaznikiWzorce}, w celu utworzenia identyfikatorów
 #' nowych wskaźników
 #' @param wyrazeniaZmienNazwy opcjonalnie dwuelementowy wektor ciągów znaków:
 #' pierwszy element zostanie podany jako argument \code{pattern}, a drugi jako
@@ -22,8 +22,8 @@
 #' pierwszy element zostanie podany jako argument \code{pattern}, a drugi jako
 #' argument \code{replace} do funkcji \code{\link{sub}} wywołanej na opisach
 #' "wzorcowych" wskaźników, w celu uzyskania opisów nowych wskaźników
-#' @param okres liczba całkowita, zostanie przypisana nowym wskaźnikom
-#' w kolumnie \code{okres} tablicy \code{sl_wskazniki}
+#' @param okres opcjonalnie liczba całkowita, zostanie przypisana nowym
+#' wskaźnikom w kolumnie \code{okres} tablicy \code{sl_wskazniki}
 #' @param doPrezentacji wartość logiczna, zostanie przypisana nowym wskaźnikom
 #' w kolumnie \code{do_prezentacji} tablicy \code{sl_wskazniki}
 #' @param zrodloDanychODBC opcjonalnie ciąg znaków - nazwa źródła danych ODBC,
