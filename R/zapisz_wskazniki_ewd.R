@@ -77,6 +77,8 @@ zapisz_wskazniki_ewd = function(nazwaPliku, sufiks, doPrezentacji = FALSE,
       names(x[[i]]) = sub(paste0("^bs_", names(x)[i], "$"), "bs", names(x[[i]]))
       wartosci_wskaznikow = rbind(wartosci_wskaznikow, x[[i]])
     }
+    wartosci_wskaznikow =
+      wartosci_wskaznikow[, names(wartosci_wskaznikow) != "matura_miedzynarodowa"]
     # dopisywanie sufiksu do nazw wskazników
     wskazniki$wskaznik = paste0(wskazniki$wskaznik, sufiks)
     wskazniki_skalowania$wskaznik = paste0(wskazniki_skalowania$wskaznik, sufiks)
@@ -122,7 +124,7 @@ zapisz_wskazniki_ewd = function(nazwaPliku, sufiks, doPrezentacji = FALSE,
     message(" Wczytywanie do tablic 'wartosci_wskaznikow'.",
             format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
     idWw = sqlExecute(P, "SELECT max(id_ww) FROM wartosci_wskaznikow",
-                            fetch = TRUE, errors = TRUE)[1, 1]
+                      fetch = TRUE, errors = TRUE)[1, 1]
     wartosci_wskaznikow$id_ww = 1:nrow(wartosci_wskaznikow) + idWw
     w = sqlExecute(P, uloz_insert_z_ramki("wartosci_wskaznikow", wartosci_wskaznikow),
                    wartosci_wskaznikow, errors = TRUE)
