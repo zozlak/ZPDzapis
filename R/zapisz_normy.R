@@ -2,7 +2,7 @@
 #' @description
 #' Funkcja służy do zapisania do bazy wyliczonych norm ekwikwantylowych.
 #' @param normy wektor opisujący unormowanie, typowo zwrócony przez funkcję
-#' \code{\link[ZPD]{normalizuj_ekwikwantylowo}}
+#' \code{\link[ZPD]{normalizuj}}
 #' @param prefiksRok ciąg znaków postaci \code{'pr'}, gdzie \code{p} oznacza
 #' prefiks części egzaminu, a \code{r} rok (zapis czterema cyframi)
 #' @param zrodloDanychODBC opcjonalnie nazwa źródła danych ODBC, dającego dostęp
@@ -12,7 +12,7 @@
 #' Funkcja wymaga też, aby w ramach połączenia nawiązywanego z bazą mieć prawa do
 #' modyfikacji tablic 'skale' i 'normy_ekwikwantylowe'.
 #' @return funkcja nic nie zwraca
-#' @seealso \code{\link[ZPD]{normalizuj_ekwikwantylowo}}
+#' @seealso \code{\link[ZPD]{normalizuj}}
 #' @export
 zapisz_normy = function(normy, prefiksRok, zrodloDanychODBC="EWD") {
   stopifnot(is.numeric(normy), length(normy) > 0, all(!is.na(normy)),

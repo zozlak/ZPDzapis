@@ -8,6 +8,7 @@
 #' @return [data.frame] zapisane elementy skali
 #' @export
 #' @importFrom RODBC odbcConnect odbcClose odbcSetAutoCommit odbcEndTran
+#' @importFrom stats na.exclude
 #' @import RODBCext
 edytuj_skale = function(
 	idSkali,

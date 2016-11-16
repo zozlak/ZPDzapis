@@ -11,6 +11,7 @@
 #' @return [numeric] id_testu utworzonego testu
 #' @export
 #' @importFrom RODBC odbcConnect odbcClose odbcSetAutoCommit odbcEndTran
+#' @importFrom stats na.exclude
 #' @import RODBCext
 stworz_test = function(
 	ewd,

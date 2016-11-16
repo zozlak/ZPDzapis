@@ -28,9 +28,10 @@ dającego dostęp do bazy (domyślnie "ewd")}
 funkcja nic nie zwraca
 }
 \description{
-Funkcja zapisuje do bazy wyniki skalowania: wartości parametrów, oszacowania
-umiejętności uczniów, ew. normy (skale raschowe). W miarę potrzeby tworzy
-nowe skalowanie w bazie, lub dopisuje do/nadpisuje już istniejące(go).
+Funkcja zapisuje do bazy oszacowania wskaźników EWD: wartości samych
+wskaźników, liczbę zdających, parametry warstwic, wartości parametrów modeli
+regresji oraz informacje o powiązaniu ze skalami wyników (oszacowań
+umiejętności uczniów).
 }
 \details{
 Wskaźniki, których wartości mają być wczytywane do bazy muszą już być

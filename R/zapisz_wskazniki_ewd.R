@@ -1,8 +1,9 @@
 #' @title Zapis wskaznikow EWD do bazy
 #' @description
-#' Funkcja zapisuje do bazy wyniki skalowania: wartości parametrów, oszacowania
-#' umiejętności uczniów, ew. normy (skale raschowe). W miarę potrzeby tworzy
-#' nowe skalowanie w bazie, lub dopisuje do/nadpisuje już istniejące(go).
+#' Funkcja zapisuje do bazy oszacowania wskaźników EWD: wartości samych
+#' wskaźników, liczbę zdających, parametry warstwic, wartości parametrów modeli
+#' regresji oraz informacje o powiązaniu ze skalami wyników (oszacowań
+#' umiejętności uczniów).
 #' @param nazwaPliku ciąg znaków - nazwa pliku .RData zawierającego obiekt
 #' klasy \code{listaWskaznikowEWD}, będący wynikiem działania funkcji
 #' \code{\link[EWDwskazniki]{przygotuj_wsk_ewd}})
@@ -115,20 +116,20 @@ zapisz_wskazniki_ewd = function(nazwaPliku, sufiks, doPrezentacji = FALSE,
             format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
     w = sqlExecute(P, uloz_insert_z_ramki("wskazniki", wskazniki),
                    wskazniki, errors = TRUE)
-    message(" Wczytywanie do tablic 'wskazniki_skalowania'.",  #i 'wskazniki_parametry'.",
+    message(" Wczytywanie do tablicy 'wskazniki_skalowania'.",  #i 'wskazniki_parametry'.",
             format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
     w = sqlExecute(P, uloz_insert_z_ramki("wskazniki_skalowania", wskazniki_skalowania),
                    wskazniki_skalowania, errors = TRUE)
     #w = sqlExecute(P, uloz_insert_z_ramki("wskazniki_parametry", wskazniki_parametry),
     #               wskazniki_parametry, errors = TRUE)
-    message(" Wczytywanie do tablic 'wartosci_wskaznikow'.",
+    message(" Wczytywanie do tablicy 'wartosci_wskaznikow'.",
             format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
     idWw = sqlExecute(P, "SELECT max(id_ww) FROM wartosci_wskaznikow",
                       fetch = TRUE, errors = TRUE)[1, 1]
     wartosci_wskaznikow$id_ww = 1:nrow(wartosci_wskaznikow) + idWw
     w = sqlExecute(P, uloz_insert_z_ramki("wartosci_wskaznikow", wartosci_wskaznikow),
                    wartosci_wskaznikow, errors = TRUE)
-    message(" Wczytywanie do tablic 'liczba_zdajacych'.",
+    message(" Wczytywanie do tablicy 'liczba_zdajacych'.",
             format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
     lPrzed = nrow(liczba_zdajacych)
     liczba_zdajacych =
