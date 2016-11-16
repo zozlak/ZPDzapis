@@ -12,6 +12,7 @@
 #' @return [numeric] id_skali utworzonej skali
 #' @export
 #' @importFrom RODBC odbcConnect odbcClose odbcSetAutoCommit odbcEndTran
+#' @importFrom stats na.exclude
 #' @import RODBCext
 stworz_skale = function(
 	opis,

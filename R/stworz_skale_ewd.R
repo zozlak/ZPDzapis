@@ -21,6 +21,7 @@
 #' @return wektor liczbowy zawierający id_skali utworzonych skal
 #' @export
 #' @importFrom RODBC odbcConnect odbcClose odbcSetAutoCommit odbcEndTran
+#' @importFrom stats setNames
 #' @import RODBCext
 stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
                             dopisz = FALSE, zrodloDanychODBC = "EWD") {
@@ -30,7 +31,7 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
             all(czyRasch %in% c(TRUE, FALSE))  , length(czyRasch) == 1,
             all(dopisz %in% c(TRUE, FALSE))    , length(dopisz) == 1,
             is.character(zrodloDanychODBC)     , length(zrodloDanychODBC) == 1)
-  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2015)
+  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2016)
   stopifnot(rodzajEgzaminu %in% c("sprawdzian", "egzamin gimnazjalny", "matura"))
 
   # tworzenie listy ze skalami i powiązanymi z nimi częściami egzaminów
@@ -134,7 +135,7 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
     }
   }
   # ustawianie, do jakich danych (EWD/CKE) należy się podpinać
-  if ((rodzajEgzaminu == "sprawdzian" & rok < 2003) |
+  if ((rodzajEgzaminu == "sprawdzian" & (rok < 2003 | rok == 2013)) |
       (rodzajEgzaminu == "egzamin gimnazjalny" & rok < 2006) |
       (rodzajEgzaminu == "matura" & rok < 2010)) {
     czyEwd = FALSE
@@ -176,26 +177,26 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
       opisTestu = paste(rodzajEgzaminu, testyMapa[testy[i]][[1]][1], rok, sep = ";")
       P = odbcConnect(zrodloDanychODBC)
       on.exit(odbcClose(P))
-      idTestow = sqlExecute(P, "SELECT id_testu FROM testy WHERE opis = ?",
+      idPseudtestu = sqlExecute(P, "SELECT id_testu FROM testy WHERE opis = ?",
                           opisTestu, fetch = TRUE)[, 1]
       odbcClose(P)
       on.exit({})
-      if (length(idTestow) == 0) {
+      if (length(idPseudtestu) == 0) {
         message(" Tworzenie nowego testu: '", opisTestu, "' (może chwilę potrwać...).")
-        idTestow = stworz_test_z_wielu_czesci(rodzajEgzaminu, skale[[i]],
-                                              rok, czyEwd, opisTestu,
-                                              testyMapa[testy[i]][[1]][2],
-                                              zrodloDanychODBC)
+        idPseudtestu = stworz_test_z_wielu_czesci(rodzajEgzaminu, skale[[i]],
+                                                  rok, czyEwd, opisTestu,
+                                                  testyMapa[testy[i]][[1]][2],
+                                                  zrodloDanychODBC)
       }
       # przyłączanie kryteriów do tego testu
       P = odbcConnect(zrodloDanychODBC)
       on.exit(odbcClose(P))
       odbcSetAutoCommit(P, FALSE)
       wBazie = sqlExecute(P, "SELECT count(id_kryterium) FROM testy_kryteria
-                               WHERE id_testu = ?", idTestow, fetch = TRUE)[1, 1]
+                               WHERE id_testu = ?", idPseudtestu, fetch = TRUE)[1, 1]
       if (wBazie == 0) {
         message(" Wypełnianie tablicy 'testy_kryteria' dla testu '", opisTestu, "'.")
-        kryteria$id_testu = idTestow
+        kryteria$id_testu = idPseudtestu
         kryteria = cbind(kryteria, popr_dystraktor = NA)
         sqlExecute(P, "INSERT INTO testy_kryteria (id_testu, id_kryterium,
                         kolejnosc, popr_dystraktor) VALUES (?, ?, ?, ?)",
@@ -204,6 +205,7 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
       odbcEndTran(P, TRUE)
       odbcClose(P)
       on.exit({})
+      idTestow = c(idTestow, idPseudtestu)
     }
     # rejestrowanie skali
     idSkal[i] = stworz_skale(names(skale)[i], "ewd", FALSE, idTestow, zrodloDanychODBC)
@@ -219,6 +221,30 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
     odbcEndTran(P, TRUE)
     odbcClose(P)
     on.exit({})
+    # w przypadku skal raschowych spr. i egz. gimn. - dodawanie skalowania
+    # dla normalizacji ekwikwantylowej
+    temp = gsub("^[^;]+;([^;]+);.*$", "\\1", names(skale)[i])
+    if (substr(temp, nchar(temp), nchar(temp)) == "R" &
+        substr(temp, 1, 1) %in% c("s", "g")) {
+      message(" Dodawanie skalowania dla normalizacji ekwikwantylowej.")
+      P = odbcConnect(zrodloDanychODBC)
+      on.exit(odbcClose(P))
+      odbcSetAutoCommit(P, FALSE)
+      skalowania = data.frame(skalowanie = 1,
+                              opis = 'normalizacja ekwikwantylowa EWD',
+                              estymacja = 'nie dotyczy', id_skali = idSkal[i],
+                              do_prezentacji = FALSE, data = Sys.Date())
+      sqlExecute(P, "INSERT INTO skalowania (skalowanie, opis, estymacja,
+                      id_skali, do_prezentacji, data) VALUES (?, ?, ?, ?, ?, ?)",
+                 skalowania, fetch = TRUE)
+      sqlExecute(P, "INSERT INTO skalowania_grupy (id_skali, skalowanie, grupa)
+                      VALUES (?, ?, ?)",
+                 data.frame(id_skali = idSkal[i], skalowanie = 1, grupa = ""),
+                 fetch = TRUE)
+      odbcEndTran(P, TRUE)
+      odbcClose(P)
+      on.exit({})
+    }
   }
 
   return(idSkal)

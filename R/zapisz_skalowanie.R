@@ -35,6 +35,7 @@
 #' nowe nie zostaną wczytane automatycznie.
 #' @return funkcja nic nie zwraca
 #' @export
+#' @importFrom utils write.csv zip
 zapisz_skalowanie = function(nazwaPliku, doPrezentacji = FALSE, nadpisz = FALSE,
                              oszacowaniaDoCopy = TRUE, zrodloDanychODBC = "ewd"){
   stopifnot(is.character(nazwaPliku), length(nazwaPliku) == 1,

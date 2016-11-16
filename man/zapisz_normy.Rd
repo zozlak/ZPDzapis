@@ -8,7 +8,7 @@ zapisz_normy(normy, prefiksRok, zrodloDanychODBC = "EWD")
 }
 \arguments{
 \item{normy}{wektor opisujący unormowanie, typowo zwrócony przez funkcję
-\code{\link[ZPD]{normalizuj_ekwikwantylowo}}}
+\code{\link[ZPD]{normalizuj}}}
 
 \item{prefiksRok}{ciąg znaków postaci \code{'pr'}, gdzie \code{p} oznacza
 prefiks części egzaminu, a \code{r} rok (zapis czterema cyframi)}
@@ -28,6 +28,6 @@ Funkcja wymaga też, aby w ramach połączenia nawiązywanego z bazą mieć praw
 modyfikacji tablic 'skale' i 'normy_ekwikwantylowe'.
 }
 \seealso{
-\code{\link[ZPD]{normalizuj_ekwikwantylowo}}
+\code{\link[ZPD]{normalizuj}}
 }
 
