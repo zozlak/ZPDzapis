@@ -1,6 +1,6 @@
 #' @title Zapis normalizacji ekwikwantylowej do bazy
 #' @description
-#' Funkcja służy do zapisania do bazy wyliczonych norm ekwikwantylowych.
+#' Funkcja służy do zapisania do bazy obliczonych norm ekwikwantylowych.
 #' @param normy wektor opisujący unormowanie, typowo zwrócony przez funkcję
 #' \code{\link[ZPD]{normalizuj}}
 #' @param prefiksRok ciąg znaków postaci \code{'pr'}, gdzie \code{p} oznacza

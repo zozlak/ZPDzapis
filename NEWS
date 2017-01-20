@@ -1,4 +1,12 @@
 --------------------
+Zmiany w ZPDzapis 0.4.1 (20.01.2017)
+
+Nowe funkcjonalności:
+- zapisz_wskazniki() otrzymała nowy argument "korekta", który umożliwia użycie
+  tej funkcji w połączeniu z wynikami działania koryguj_wsk_ewd() z pakietu
+  EWDwskazniki.
+
+--------------------
 Zmiany w ZPDzapis 0.4.0 (16.11.2016)
 
 Nowe funkcjonalności:
@@ -68,11 +76,11 @@ Zmiany w ZPDzapis 0.1.0 (20.06.2015)
 
 Nowe funkcje:
 - stworz_skale_ewd() - pozwala wygodnie i bez zbędnego myślenia stworzyć skale
-    potrzebne do wyliczania wskaźników EWD oraz przypisać do nich kryteria oceny;
+   potrzebne do obliczania wskaźników EWD oraz przypisać do nich kryteria oceny;
 
 Nowe funkcjonalności:
 - stworz_test_z_wielu_czesci() zapisuje do tablicy 'testy' rodzaj egzaminu,
-    a opcjonalnie może zapisać tam również część egzaminu;
+  a opcjonalnie może zapisać tam również część egzaminu;
 
 Naprawione błędy:
 - Kwestie importu funkcji z pakietów RODBC i RODBCext zostały wyprowadzone tak,
