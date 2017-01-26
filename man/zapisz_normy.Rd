@@ -20,7 +20,7 @@ do bazy (domyślnie "EWD")}
 funkcja nic nie zwraca
 }
 \description{
-Funkcja służy do zapisania do bazy wyliczonych norm ekwikwantylowych.
+Funkcja służy do zapisania do bazy obliczonych norm ekwikwantylowych.
 }
 \details{
 Funkcja nie dopuszcza braków danych w argumencie \code{normy}.

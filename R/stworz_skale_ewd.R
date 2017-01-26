@@ -1,7 +1,7 @@
-#' @title Tworzy w bazie skale zwiazane z wyliczaniem wskaznikow EWD
+#' @title Tworzy w bazie skale zwiazane z obliczaniem wskaznikow EWD
 #' @description
 #' Dla podanego rodzaju egzaminu i roku funkcja tworzy odpowiednie skale,
-#' potrzebne do wyliczania wskaźników EWD, przypisujac do nich wszystkie
+#' potrzebne do obliczania wskaźników EWD, przypisujac do nich wszystkie
 #' kryteria odpowiednich części egzaminu. Tworzy też (wykorzystując funkcję
 #' \code{\link{stworz_test_z_wielu_czesci}}) testy odpowiadające skalom,
 #' które obejmują kilka części egzaminu.

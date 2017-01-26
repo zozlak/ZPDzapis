@@ -13,6 +13,10 @@
 #' (w danym roku) jako 'do prezentacji'?
 #' @param nadpisz wartość logiczna - czy nadpisać wartości zapisane w bazie?
 #' (jeśli istnieją)
+#' @param korekta wartość logiczna - ustawić na ]code{TRUE}, jeśli wczytywane
+#' są korekty wartości wskaźników dla poszczególnych szkół, obliczone przy
+#' pomocy funkcji \code{\link[EWDwskazniki]{koryguj_wsk_ewd}} (wartość
+#' parametrów \code{doPrezentacji} i \code{nadpisz} zostaną wtedy zignorowane)
 #' @param zrodloDanychODBC opcjonalnie ciąg znaków - nazwa źródła danych ODBC,
 #' dającego dostęp do bazy (domyślnie "ewd")
 #' @return funkcja nic nie zwraca
@@ -30,16 +34,20 @@
 #' @import RODBCext
 #' @export
 zapisz_wskazniki_ewd = function(nazwaPliku, sufiks, doPrezentacji = FALSE,
-                                nadpisz = FALSE, zrodloDanychODBC = "ewd") {
+                                nadpisz = FALSE, korekta = FALSE,
+                                zrodloDanychODBC = "ewd") {
 
   stopifnot(is.character(nazwaPliku), length(nazwaPliku) == 1,
             is.character(sufiks), length(sufiks) == 1,
-            is.logical(nadpisz), length(nadpisz) == 1,
             is.logical(doPrezentacji), length(doPrezentacji) == 1,
+            is.logical(korekta), length(korekta) == 1,
             is.character(zrodloDanychODBC), length(zrodloDanychODBC) == 1)
   stopifnot(file.exists(nazwaPliku), nadpisz %in% c(TRUE, FALSE),
-            doPrezentacji %in% c(TRUE, FALSE))
+            doPrezentacji %in% c(TRUE, FALSE), korekta %in% c(TRUE, FALSE))
   sufiks = paste0("_", sub("^_", "", sufiks))
+  if (korekta) {
+    nadpisz = FALSE
+  }
 
   P = odbcConnect(zrodloDanychODBC)
   on.exit(odbcClose(P))
@@ -53,13 +61,20 @@ zapisz_wskazniki_ewd = function(nazwaPliku, sufiks, doPrezentacji = FALSE,
     if (!("listaWskaznikowEWD" %in% class(x))) {
       next
     }
-    wskazniki = attributes(x)$wskazniki
-    wskazniki$do_prezentacji = doPrezentacji
-    wskazniki_skalowania = attributes(x)$wskazniki_skalowania
-    wskazniki_parametry = attributes(x)$wskazniki_parametry
+    if (!korekta) {
+      wskazniki = attributes(x)$wskazniki
+      wskazniki$do_prezentacji = doPrezentacji
+      wskazniki_skalowania = attributes(x)$wskazniki_skalowania
+      wskazniki_parametry = attributes(x)$wskazniki_parametry
+      # dopisywanie sufiksu do nazw wskazników
+      wskazniki$wskaznik = paste0(wskazniki$wskaznik, sufiks)
+      wskazniki_skalowania$wskaznik = paste0(wskazniki_skalowania$wskaznik, sufiks)
+      wskazniki_parametry$wskaznik = paste0(wskazniki_parametry$wskaznik, sufiks)
+    }
     liczba_zdajacych = attributes(x)$liczba_zdajacych
     names(liczba_zdajacych) = sub("^id_szkoly(.*)$", "id_szkoly",
                                   names(liczba_zdajacych))
+    liczba_zdajacych$wskaznik = paste0(liczba_zdajacych$wskaznik, sufiks)
     # przygotowywanie wsadu do 'wartosc_wskaznikow'
     message(" Przygotowywanie danych do wczytania.",
             format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
@@ -80,16 +95,11 @@ zapisz_wskazniki_ewd = function(nazwaPliku, sufiks, doPrezentacji = FALSE,
     }
     wartosci_wskaznikow =
       wartosci_wskaznikow[, names(wartosci_wskaznikow) != "matura_miedzynarodowa"]
-    # dopisywanie sufiksu do nazw wskazników
-    wskazniki$wskaznik = paste0(wskazniki$wskaznik, sufiks)
-    wskazniki_skalowania$wskaznik = paste0(wskazniki_skalowania$wskaznik, sufiks)
-    wskazniki_parametry$wskaznik = paste0(wskazniki_parametry$wskaznik, sufiks)
     wartosci_wskaznikow$wskaznik = paste0(wartosci_wskaznikow$wskaznik, sufiks)
-    liczba_zdajacych$wskaznik = paste0(liczba_zdajacych$wskaznik, sufiks)
-    rozneWskazniki = unique(wartosci_wskaznikow[, c("rodzaj_wsk", "wskaznik", "rok_do")])
 
     # kasowanie
     if (nadpisz) {
+      rozneWskazniki = unique(wartosci_wskaznikow[, c("rodzaj_wsk", "wskaznik", "rok_do")])
       message(" Kasowanie danych w bazie dla wskazników:")
       print(rozneWskazniki, row.names = FALSE)
       # jeśli powyżej nie wybuchło, to kasujemy szerokim frontem
@@ -111,17 +121,33 @@ zapisz_wskazniki_ewd = function(nazwaPliku, sufiks, doPrezentacji = FALSE,
                      rozneWskazniki, errors = TRUE)
       )
     }
+    if (korekta) {
+      rozneWskazniki = unique(wartosci_wskaznikow[, c("rodzaj_wsk", "wskaznik",
+                                                      "rok_do", "id_szkoly")])
+      message(" Kasowanie danych w bazie dla wskazników w szkołach:")
+      print(rozneWskazniki, row.names = FALSE)
+      kasowanie = list(
+        liczba_zdajacych =
+          sqlExecute(P, "DELETE FROM liczba_zdajacych WHERE id_ww IN (SELECT id_ww FROM wartosci_wskaznikow WHERE rodzaj_wsk = ? AND wskaznik = ? AND rok_do = ? AND id_szkoly = ?)",
+                     rozneWskazniki, errors = TRUE),
+        wartosci_wskaznikow =
+          sqlExecute(P, "DELETE FROM wartosci_wskaznikow WHERE rodzaj_wsk = ? AND wskaznik = ? AND rok_do = ? AND id_szkoly = ?",
+                     rozneWskazniki, errors = TRUE)
+      )
+    }
     # wczytujemy
-    message(" Wczytywanie do tablicy 'wskazniki'.",
-            format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
-    w = sqlExecute(P, uloz_insert_z_ramki("wskazniki", wskazniki),
-                   wskazniki, errors = TRUE)
-    message(" Wczytywanie do tablicy 'wskazniki_skalowania'.",  #i 'wskazniki_parametry'.",
-            format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
-    w = sqlExecute(P, uloz_insert_z_ramki("wskazniki_skalowania", wskazniki_skalowania),
-                   wskazniki_skalowania, errors = TRUE)
-    #w = sqlExecute(P, uloz_insert_z_ramki("wskazniki_parametry", wskazniki_parametry),
-    #               wskazniki_parametry, errors = TRUE)
+    if (!korekta) {
+      message(" Wczytywanie do tablicy 'wskazniki'.",
+              format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
+      w = sqlExecute(P, uloz_insert_z_ramki("wskazniki", wskazniki),
+                     wskazniki, errors = TRUE)
+      message(" Wczytywanie do tablicy 'wskazniki_skalowania'.",  #i 'wskazniki_parametry'.",
+              format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
+      w = sqlExecute(P, uloz_insert_z_ramki("wskazniki_skalowania", wskazniki_skalowania),
+                     wskazniki_skalowania, errors = TRUE)
+      #w = sqlExecute(P, uloz_insert_z_ramki("wskazniki_parametry", wskazniki_parametry),
+      #               wskazniki_parametry, errors = TRUE)
+    }
     message(" Wczytywanie do tablicy 'wartosci_wskaznikow'.",
             format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
     idWw = sqlExecute(P, "SELECT max(id_ww) FROM wartosci_wskaznikow",

@@ -5,7 +5,7 @@
 \title{Zapis wskaznikow EWD do bazy}
 \usage{
 zapisz_wskazniki_ewd(nazwaPliku, sufiks, doPrezentacji = FALSE,
-  nadpisz = FALSE, zrodloDanychODBC = "ewd")
+  nadpisz = FALSE, korekta = FALSE, zrodloDanychODBC = "ewd")
 }
 \arguments{
 \item{nazwaPliku}{ciąg znaków - nazwa pliku .RData zawierającego obiekt
@@ -20,6 +20,11 @@ do części wynikającej z nazwy konstruktu}
 
 \item{nadpisz}{wartość logiczna - czy nadpisać wartości zapisane w bazie?
 (jeśli istnieją)}
+
+\item{korekta}{wartość logiczna - ustawić na ]code{TRUE}, jeśli wczytywane
+są korekty wartości wskaźników dla poszczególnych szkół, obliczone przy
+pomocy funkcji \code{\link[EWDwskazniki]{koryguj_wsk_ewd}} (wartość
+parametrów \code{doPrezentacji} i \code{nadpisz} zostaną wtedy zignorowane)}
 
 \item{zrodloDanychODBC}{opcjonalnie ciąg znaków - nazwa źródła danych ODBC,
 dającego dostęp do bazy (domyślnie "ewd")}
