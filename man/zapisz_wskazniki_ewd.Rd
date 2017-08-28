@@ -50,4 +50,3 @@ z wartością kolumny \code{do_prezentacji} w tablicy \code{sl_wskazniki},
 na którą wywołanie tej funkcji nie oddziałuje (trzeba ją modyfikować w bazie
 "ręcznie").
 }
-

@@ -30,4 +30,3 @@ modyfikacji tablic 'skale' i 'normy_ekwikwantylowe'.
 \seealso{
 \code{\link[ZPD]{normalizuj}}
 }
-

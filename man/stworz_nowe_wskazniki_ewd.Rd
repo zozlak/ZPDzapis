@@ -49,4 +49,3 @@ zostaną identyfikatory wskaźników (tj. wartość kolumny \code{wskaznik}).
 Dodatkowe argumenty pozwalają też zmodyfikować wartości kolumn \code{nazwa},
 \code{opis}, \code{okres} i \code{do_prezentacji}.
 }
-

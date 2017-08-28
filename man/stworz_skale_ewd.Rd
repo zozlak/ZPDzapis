@@ -37,4 +37,3 @@ które obejmują kilka części egzaminu.
 Uwaga, skale tworzone są z flagą \code{do_prezentacji} ustawioną na
 \code{FALSE}.
 }
-

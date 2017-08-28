@@ -29,4 +29,3 @@ stworz_test(ewd, opis, data, rodzajEgzaminu = NA_character_,
 \description{
 _
 }
-

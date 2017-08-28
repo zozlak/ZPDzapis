@@ -31,7 +31,7 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
             all(czyRasch %in% c(TRUE, FALSE))  , length(czyRasch) == 1,
             all(dopisz %in% c(TRUE, FALSE))    , length(dopisz) == 1,
             is.character(zrodloDanychODBC)     , length(zrodloDanychODBC) == 1)
-  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2016)
+  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2017)
   stopifnot(rodzajEgzaminu %in% c("sprawdzian", "egzamin gimnazjalny", "matura"))
 
   # tworzenie listy ze skalami i powiązanymi z nimi częściami egzaminów
@@ -135,7 +135,7 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
     }
   }
   # ustawianie, do jakich danych (EWD/CKE) należy się podpinać
-  if ((rodzajEgzaminu == "sprawdzian" & (rok < 2003 | rok == 2013)) |
+  if ((rodzajEgzaminu == "sprawdzian" & (rok < 2003 | rok > 2012)) |
       (rodzajEgzaminu == "egzamin gimnazjalny" & rok < 2006) |
       (rodzajEgzaminu == "matura" & rok < 2010)) {
     czyEwd = FALSE
@@ -160,6 +160,10 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
                                        AND ewd = ?",
                                  list(rodzajEgzaminu, skale[[i]][j], rok, czyEwd),
                                  fetch = TRUE)
+      if (nrow(idTestow[[j]]) == 0) {
+        stop("Nie udało się znaleźć testów z wynikami egzaminu '", rodzajEgzaminu,
+             "', w roku ", rok, " ze źródła ewd=", czyEwd, ".")
+      }
     }
     # wyszukiwanie kryteriow oceny
     idTestow = unique(unlist(idTestow))

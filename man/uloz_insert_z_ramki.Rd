@@ -20,4 +20,3 @@ ciąg znaków
 Funkcja przygotowuje składnię polecenie INSERT dla zapytania
 parametryzowanego, na podstawie struktury ramki danych.
 }
-
