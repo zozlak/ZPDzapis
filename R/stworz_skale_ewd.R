@@ -135,7 +135,7 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
     }
   }
   # ustawianie, do jakich danych (EWD/CKE) należy się podpinać
-  if ((rodzajEgzaminu == "sprawdzian" & (rok < 2003 | rok > 2012)) |
+  if ((rodzajEgzaminu == "sprawdzian" & rok < 2003) |
       (rodzajEgzaminu == "egzamin gimnazjalny" & rok < 2006) |
       (rodzajEgzaminu == "matura" & rok < 2010)) {
     czyEwd = FALSE
