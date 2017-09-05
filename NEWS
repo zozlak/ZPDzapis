@@ -2,7 +2,7 @@
 Zmiany w ZPDzapis 0.4.2 (??.??.2017)
 
 Nowe funkcjonalności:
-- stworz_skale_ewd() radzi sobie ze sprawdizanami z lat 2014-2016.
+- stworz_skale_ewd() radzi sobie ze sprawdzianami z lat 2014-2016.
 
 Naprawione błędy:
 - stworz_skale_ewd() rzuca informacyjnym błędem, jeśli przypadkiem nie jest
