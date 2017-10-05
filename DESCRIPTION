@@ -7,7 +7,7 @@ Authors@R: c(
   person("Tomasz", "Zoltak", , "tomek@zozlak.org", role = c("aut")))
 Description: Funkcje zapisu danych do bazy ZPD.
 Depends:
-    RODBCext (>= 0.2.7)
+    RODBCext (>= 0.3.1)
 Imports:
     RODBC
 Suggests:
