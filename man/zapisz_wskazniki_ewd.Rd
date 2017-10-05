@@ -21,7 +21,7 @@ do części wynikającej z nazwy konstruktu}
 \item{nadpisz}{wartość logiczna - czy nadpisać wartości zapisane w bazie?
 (jeśli istnieją)}
 
-\item{korekta}{wartość logiczna - ustawić na ]code{TRUE}, jeśli wczytywane
+\item{korekta}{wartość logiczna - ustawić na \code{TRUE}, jeśli wczytywane
 są korekty wartości wskaźników dla poszczególnych szkół, obliczone przy
 pomocy funkcji \code{\link[EWDwskazniki]{koryguj_wsk_ewd}} (wartość
 parametrów \code{doPrezentacji} i \code{nadpisz} zostaną wtedy zignorowane)}
@@ -50,4 +50,3 @@ z wartością kolumny \code{do_prezentacji} w tablicy \code{sl_wskazniki},
 na którą wywołanie tej funkcji nie oddziałuje (trzeba ją modyfikować w bazie
 "ręcznie").
 }
-

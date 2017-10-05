@@ -13,7 +13,7 @@
 #' (w danym roku) jako 'do prezentacji'?
 #' @param nadpisz wartość logiczna - czy nadpisać wartości zapisane w bazie?
 #' (jeśli istnieją)
-#' @param korekta wartość logiczna - ustawić na ]code{TRUE}, jeśli wczytywane
+#' @param korekta wartość logiczna - ustawić na \code{TRUE}, jeśli wczytywane
 #' są korekty wartości wskaźników dla poszczególnych szkół, obliczone przy
 #' pomocy funkcji \code{\link[EWDwskazniki]{koryguj_wsk_ewd}} (wartość
 #' parametrów \code{doPrezentacji} i \code{nadpisz} zostaną wtedy zignorowane)

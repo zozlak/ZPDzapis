@@ -19,4 +19,3 @@ znajdz_pseudokryteria(kryteria, opisy, P)
 \description{
 _
 }
-

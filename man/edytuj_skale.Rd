@@ -21,4 +21,3 @@ edytuj_skale(idSkali, elementy, nadpisz = FALSE, zrodloDanychODBC = "EWD")
 \description{
 Patrz http://zpd.ibe.edu.pl/doku.php?id=r_zpd_skale
 }
-

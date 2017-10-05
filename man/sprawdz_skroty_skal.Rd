@@ -17,4 +17,3 @@ sprawdz_skroty_skal(skroty, P)
 \description{
 _
 }
-

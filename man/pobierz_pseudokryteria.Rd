@@ -21,4 +21,3 @@ separatorem '|'
 \details{
 _
 }
-

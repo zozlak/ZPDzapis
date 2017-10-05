@@ -13,7 +13,7 @@ stworz_skale_ewd(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
 \item{rok}{liczba całkowita}
 
 \item{sufiks}{ciąg znaków - sufiks dodawany do opisów skal (nie jest dodawany
-do opisu tworzonych testów)}
+do opisu tworzonych testów, ani nazw skal raschowych)}
 
 \item{czyRasch}{wartość logiczna - czy tworzyć również skale raschowe do
 Kalkulatora EWD?}
@@ -37,4 +37,3 @@ które obejmują kilka części egzaminu.
 Uwaga, skale tworzone są z flagą \code{do_prezentacji} ustawioną na
 \code{FALSE}.
 }
-

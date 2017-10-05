@@ -62,4 +62,3 @@ w ramach wywołania funkcji usunięte zostaną dotychczasowe wartości tablicy
 \code{skalowania_obserwacje} powiązane z danymi skalami-skalowaniami, ale
 nowe nie zostaną wczytane automatycznie.
 }
-

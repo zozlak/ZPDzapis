@@ -48,4 +48,3 @@ został utworzony. Uwaga! Nie gwarantuje to, że istniejący w bazie test skład
 z identycznych testów składowych - porównanie bazuje tylko na opisie testu, który jest
 ustawiany arbitralnie przez tworządego test.
 }
-

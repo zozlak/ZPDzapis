@@ -26,4 +26,3 @@ Po dokonaniu takiego „zarejestrowania” należy wprowadzić do bazy informacj
 o kryteriach oceny i pseudokryteriach oceny, z których składa się dana skala
 - służy do tego funkcja \code{\link{edytuj_skale}}.
 }
-
