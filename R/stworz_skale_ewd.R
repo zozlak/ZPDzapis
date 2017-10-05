@@ -11,7 +11,7 @@
 #' @param rodzajEgzaminu ciąg znaków
 #' @param rok liczba całkowita
 #' @param sufiks ciąg znaków - sufiks dodawany do opisów skal (nie jest dodawany
-#' do opisu tworzonych testów)
+#' do opisu tworzonych testów, ani nazw skal raschowych)
 #' @param czyRasch wartość logiczna - czy tworzyć również skale raschowe do
 #' Kalkulatora EWD?
 #' @param dopisz wartość logiczna - czy jeśli istnieją już w bazie jakieś skale
@@ -75,19 +75,35 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
       }
     }
   } else if (rodzajEgzaminu == "matura") {
-    skale = list(
-      "ewd;m_h"  = c("j. polski podstawowa", "j. polski rozszerzona",
-                     "historia podstawowa",  "historia rozszerzona",
-                     "WOS podstawowa",       "WOS rozszerzona"),
-      "ewd;m_jp" = c("j. polski podstawowa", "j. polski rozszerzona"),
-      "ewd;m_m"  = c("matematyka podstawowa", "matematyka rozszerzona"),
-      "ewd;m_mp" = c("matematyka podstawowa",  "matematyka rozszerzona",
-                     "biologia podstawowa",    "biologia rozszerzona",
-                     "chemia podstawowa",      "chemia rozszerzona",
-                     "fizyka podstawowa",      "fizyka rozszerzona",
-                     "geografia podstawowa",   "geografia rozszerzona",
-                     "informatyka podstawowa", "informatyka rozszerzona")
-    )
+    if (rok <= 2016) {
+      skale = list(
+        "ewd;m_h"  = c("j. polski podstawowa", "j. polski rozszerzona",
+                       "historia podstawowa",  "historia rozszerzona",
+                       "WOS podstawowa",       "WOS rozszerzona"),
+        "ewd;m_jp" = c("j. polski podstawowa", "j. polski rozszerzona"),
+        "ewd;m_m"  = c("matematyka podstawowa", "matematyka rozszerzona"),
+        "ewd;m_mp" = c("matematyka podstawowa",  "matematyka rozszerzona",
+                       "biologia podstawowa",    "biologia rozszerzona",
+                       "chemia podstawowa",      "chemia rozszerzona",
+                       "fizyka podstawowa",      "fizyka rozszerzona",
+                       "geografia podstawowa",   "geografia rozszerzona",
+                       "informatyka podstawowa", "informatyka rozszerzona")
+      )
+    } else {
+      skale = list(
+        "ewd;m_h"  = c("j. polski podstawowa", "j. polski rozszerzona",
+                       "historia rozszerzona",
+                       "WOS rozszerzona"),
+        "ewd;m_jp" = c("j. polski podstawowa", "j. polski rozszerzona"),
+        "ewd;m_m"  = c("matematyka podstawowa", "matematyka rozszerzona"),
+        "ewd;m_mp" = c("matematyka podstawowa",  "matematyka rozszerzona",
+                       "biologia rozszerzona",
+                       "chemia rozszerzona",
+                       "fizyka rozszerzona",
+                       "geografia rozszerzona",
+                       "informatyka rozszerzona")
+      )
+    }
     if (czyRasch) {
       skale = append(skale, list(
         "ewd;m_jpR" = c("j. polski podstawowa", "j. polski rozszerzona"),
@@ -96,9 +112,11 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
     }
   }
   testy = sub("R$", "", sub("^ewd;", "", names(skale)))
+  maskaNieRasch = !grepl("R$", names(skale))
   names(skale) = paste0(names(skale), ";", rok)
   if (sufiks != "") {
-    names(skale) = paste0(names(skale), ";", sub("^;","", sufiks))
+    names(skale)[maskaNieRasch] =
+      paste0(names(skale)[maskaNieRasch], ";", sub("^;","", sufiks))
   }
   # mapowanie opisów skal na opisy testów
   testyMapa = list(

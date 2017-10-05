@@ -1,12 +1,14 @@
 --------------------
-Zmiany w ZPDzapis 0.4.2 (??.??.2017)
+Zmiany w ZPDzapis 0.4.2 (05.10.2017)
 
 Nowe funkcjonalności:
-- stworz_skale_ewd() radzi sobie ze sprawdzianami z lat 2014-2016.
+- stworz_skale_ewd() radzi sobie ze sprawdzianami z lat 2014-2016
+  i z maturą 2017;
+- stworz_skale_ewd().
 
 Naprawione błędy:
-- stworz_skale_ewd() rzuca informacyjnym błędem, jeśli przypadkiem nie jest
-  w stanie znaleźć testów opisujących wyniki danego egzaminu.
+- stworz_skale_ewd() rzuca informacyjnym błędem, jeśli nie jest w stanie znaleźć
+  testów opisujących wyniki danego egzaminu.
 
 --------------------
 Zmiany w ZPDzapis 0.4.1 (20.01.2017)
