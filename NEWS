@@ -1,4 +1,13 @@
 --------------------
+Zmiany w ZPDzapis 0.4.3 (13.10.2017)
+
+Uaktualnienia:
+- objęto działaniem funkcji rok 2018.
+
+Naprawione błędy:
+- poprawiona dokumentacja .sqlQuery().
+
+--------------------
 Zmiany w ZPDzapis 0.4.2 (05.10.2017)
 
 Nowe funkcjonalności:

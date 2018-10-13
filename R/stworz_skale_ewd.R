@@ -31,7 +31,7 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
             all(czyRasch %in% c(TRUE, FALSE))  , length(czyRasch) == 1,
             all(dopisz %in% c(TRUE, FALSE))    , length(dopisz) == 1,
             is.character(zrodloDanychODBC)     , length(zrodloDanychODBC) == 1)
-  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2017)
+  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2018)
   stopifnot(rodzajEgzaminu %in% c("sprawdzian", "egzamin gimnazjalny", "matura"))
 
   # tworzenie listy ze skalami i powiązanymi z nimi częściami egzaminów

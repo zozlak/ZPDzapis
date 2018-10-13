@@ -16,6 +16,7 @@
 #' _
 #' @param P otwarte polaczenie ODBC
 #' @param sql polecenie SQL do wykonania
+#' @param dane ramka danych z danymi, które mają zostać wykorzystane w zapytaniu
 #' @return data.frame
 #' @importFrom RODBC odbcClearError odbcGetErrMsg
 #' @import RODBCext

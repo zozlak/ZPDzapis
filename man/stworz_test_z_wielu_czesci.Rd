@@ -4,8 +4,8 @@
 \alias{stworz_test_z_wielu_czesci}
 \title{Tworzenie testów będących złączeniem kilku części egzaminu.}
 \usage{
-stworz_test_z_wielu_czesci(rodzajEgzaminu, czesciEgzaminu, rokEgzaminu, czyEwd,
-  opis, czescEgzaminuZapisz = NA, zrodloDanychODBC = "EWD")
+stworz_test_z_wielu_czesci(rodzajEgzaminu, czesciEgzaminu, rokEgzaminu,
+  czyEwd, opis, czescEgzaminuZapisz = NA, zrodloDanychODBC = "EWD")
 }
 \arguments{
 \item{rodzajEgzaminu}{rodzaj egzaminu ("sprawdzian" / "egzamin gimnazjalny" / "matura")}

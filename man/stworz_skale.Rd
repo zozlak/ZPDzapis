@@ -4,7 +4,8 @@
 \alias{stworz_skale}
 \title{Tworzy w bazie nowa skale i zwraca jej id_skali}
 \usage{
-stworz_skale(opis, rodzaj, doPrezentacji, idTestow, zrodloDanychODBC = "EWD")
+stworz_skale(opis, rodzaj, doPrezentacji, idTestow,
+  zrodloDanychODBC = "EWD")
 }
 \arguments{
 \item{opis}{opis skali (zwyczajowo w formacie "ZESPOL;EGZ;LATA", np. "paou;s;2002-2011" lub "ewd;gh_h;2012")}
