@@ -4,7 +4,8 @@
 \alias{edytuj_skale}
 \title{Zapisuje elementy skali do bazy danych}
 \usage{
-edytuj_skale(idSkali, elementy, nadpisz = FALSE, zrodloDanychODBC = "EWD")
+edytuj_skale(idSkali, elementy, nadpisz = FALSE,
+  zrodloDanychODBC = "EWD")
 }
 \arguments{
 \item{idSkali}{identyfikator skali, ktora ma zostac zapisana (typowo uzyskany z funkcji "stworz_skale()")}

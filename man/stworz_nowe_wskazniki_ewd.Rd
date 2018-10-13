@@ -5,8 +5,8 @@
 \title{Zapis wskaznikow EWD do bazy}
 \usage{
 stworz_nowe_wskazniki_ewd(wskaznikiWzorce, wyrazeniaZmienWskaznik,
-  wyrazeniaZmienNazwy = NULL, wyrazeniaZmienOpisy = NULL, okres = NULL,
-  doPrezentacji = FALSE, zrodloDanychODBC = "ewd")
+  wyrazeniaZmienNazwy = NULL, wyrazeniaZmienOpisy = NULL,
+  okres = NULL, doPrezentacji = FALSE, zrodloDanychODBC = "ewd")
 }
 \arguments{
 \item{wskaznikiWzorce}{wektor ciągów znaków - identyfikatory wskaźników,
