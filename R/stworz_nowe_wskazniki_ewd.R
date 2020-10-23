@@ -7,6 +7,7 @@
 #' zostaną identyfikatory wskaźników (tj. wartość kolumny \code{wskaznik}).
 #' Dodatkowe argumenty pozwalają też zmodyfikować wartości kolumn \code{nazwa},
 #' \code{opis}, \code{okres} i \code{do_prezentacji}.
+#' @param P połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}
 #' @param wskaznikiWzorce wektor ciągów znaków - identyfikatory wskaźników,
 #' które już istnieją w bazie i mają posłużyć za wzorce dla nowotworzonych;
 #' @param wyrazeniaZmienWskaznik dwuelementowy wektor ciągów znaków: pierwszy
@@ -26,16 +27,17 @@
 #' wskaźnikom w kolumnie \code{okres} tablicy \code{sl_wskazniki}
 #' @param doPrezentacji wartość logiczna, zostanie przypisana nowym wskaźnikom
 #' w kolumnie \code{do_prezentacji} tablicy \code{sl_wskazniki}
-#' @param zrodloDanychODBC opcjonalnie ciąg znaków - nazwa źródła danych ODBC,
-#' dającego dostęp do bazy (domyślnie "ewd")
 #' @return funkcja nic nie zwraca
-#' @import RODBCext
 #' @export
-stworz_nowe_wskazniki_ewd = function(wskaznikiWzorce, wyrazeniaZmienWskaznik,
-                                     wyrazeniaZmienNazwy = NULL,
-                                     wyrazeniaZmienOpisy = NULL, okres = NULL,
-                                     doPrezentacji = FALSE,
-                                     zrodloDanychODBC = "ewd") {
+stworz_nowe_wskazniki_ewd = function(
+  P,
+  wskaznikiWzorce,
+  wyrazeniaZmienWskaznik,
+  wyrazeniaZmienNazwy = NULL,
+  wyrazeniaZmienOpisy = NULL,
+  okres = NULL,
+  doPrezentacji = FALSE
+) {
   stopifnot(is.character(wskaznikiWzorce), length(wskaznikiWzorce) > 0,
             is.character(wyrazeniaZmienWskaznik),
             length(wyrazeniaZmienWskaznik) == 2,
@@ -56,21 +58,25 @@ stworz_nowe_wskazniki_ewd = function(wskaznikiWzorce, wyrazeniaZmienWskaznik,
     stopifnot(length(doPrezentacji) == 1, doPrezentacji %in% c(TRUE, FALSE))
   }
 
-  P = odbcConnect(zrodloDanychODBC)
-  on.exit(odbcClose(P))
-  odbcSetAutoCommit(P, FALSE)
+  DBI::dbBegin(P)
 
   # pobieranie
   wskaznikiWzor = list(
-    sl_wskazniki =
-      sqlExecute(P, "SELECT * FROM sl_wskazniki WHERE rodzaj_wsk = 'ewd' AND wskaznik = ?",
-                 list(wskaznikiWzorce), fetch = TRUE, errors = TRUE, stringsAsFactors = FALSE),
-    sl_wskazniki_typy_szkol =
-      sqlExecute(P, "SELECT * FROM sl_wskazniki_typy_szkol WHERE rodzaj_wsk = 'ewd' AND wskaznik = ?",
-                 list(wskaznikiWzorce), fetch = TRUE, errors = TRUE, stringsAsFactors = FALSE),
-    sl_kategorie_lu =
-      sqlExecute(P, "SELECT * FROM sl_kategorie_lu WHERE rodzaj_wsk = 'ewd' AND wskaznik = ?",
-                 list(wskaznikiWzorce), fetch = TRUE, errors = TRUE, stringsAsFactors = FALSE)
+    sl_wskazniki = .sqlQuery(
+      P,
+      "SELECT * FROM sl_wskazniki WHERE rodzaj_wsk = 'ewd' AND wskaznik = $1",
+      data.frame(wskaznikiWzorce)
+    ),
+    sl_wskazniki_typy_szkol = .sqlQuery(
+      P,
+      "SELECT * FROM sl_wskazniki_typy_szkol WHERE rodzaj_wsk = 'ewd' AND wskaznik = $1",
+      data.frame(wskaznikiWzorce)
+    ),
+    sl_kategorie_lu = .sqlQuery(
+      P,
+      "SELECT * FROM sl_kategorie_lu WHERE rodzaj_wsk = 'ewd' AND wskaznik = $1",
+      data.frame(wskaznikiWzorce)
+    )
   )
   if (nrow(wskaznikiWzor$sl_wskazniki) < length(wskaznikiWzorce)) {
     stop("W bazie nie istnieją wskaźniki: '",
@@ -110,21 +116,24 @@ stworz_nowe_wskazniki_ewd = function(wskaznikiWzorce, wyrazeniaZmienWskaznik,
                          })
   # zapis
   wskaznikiNowe = list(
-    sl_wskazniki =
-      sqlExecute(P, uloz_insert_z_ramki("sl_wskazniki",
-                                        wskaznikiWzor$sl_wskazniki),
-                 wskaznikiWzor$sl_wskazniki, errors = TRUE),
-    sl_wskazniki_typy_szkol =
-      sqlExecute(P, uloz_insert_z_ramki("sl_wskazniki_typy_szkol",
-                                        wskaznikiWzor$sl_wskazniki_typy_szkol),
-                 wskaznikiWzor$sl_wskazniki_typy_szkol, errors = TRUE),
-    sl_kategorie_lu =
-      sqlExecute(P, uloz_insert_z_ramki("sl_kategorie_lu",
-                                        wskaznikiWzor$sl_kategorie_lu),
-                 wskaznikiWzor$sl_kategorie_lu, errors = TRUE)
+    sl_wskazniki = .sqlQuery(
+      P,
+      uloz_insert_z_ramki("sl_wskazniki", wskaznikiWzor$sl_wskazniki),
+      wskaznikiWzor$sl_wskazniki
+    ),
+    sl_wskazniki_typy_szkol = .sqlQuery(
+      P,
+      uloz_insert_z_ramki("sl_wskazniki_typy_szkol",wskaznikiWzor$sl_wskazniki_typy_szkol),
+      wskaznikiWzor$sl_wskazniki_typy_szkol
+    ),
+    sl_kategorie_lu = .sqlQuery(
+      P,
+      uloz_insert_z_ramki("sl_kategorie_lu", wskaznikiWzor$sl_kategorie_lu),
+      wskaznikiWzor$sl_kategorie_lu
+    )
   )
   # koniec
-  odbcEndTran(P, TRUE)
+  DBI::dbCommit(P)
   message(" Zapis ", nrow(wskaznikiWzor$sl_wskazniki),
           " wskaźników, zakończony powodzeniem.")
   invisible(NULL)

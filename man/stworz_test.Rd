@@ -4,11 +4,19 @@
 \alias{stworz_test}
 \title{Tworzy nowy test (także jako kompilację wskazanych testów)}
 \usage{
-stworz_test(ewd, opis, data, rodzajEgzaminu = NA_character_,
-  czescEgzaminu = NA_character_, idTestow = NULL,
-  zrodloDanychODBC = "EWD")
+stworz_test(
+  P,
+  ewd,
+  opis,
+  data,
+  rodzajEgzaminu = NA_character_,
+  czescEgzaminu = NA_character_,
+  idTestow = NULL
+)
 }
 \arguments{
+\item{P}{połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}}
+
 \item{ewd}{czy będzie to test ewd [logical]}
 
 \item{opis}{opis testu}
@@ -20,8 +28,6 @@ stworz_test(ewd, opis, data, rodzajEgzaminu = NA_character_,
 \item{czescEgzaminu}{część egzaminu powiązana z testem (lub NA)}
 
 \item{idTestow}{wektor id_testu testów, których kryteria oceny mają zostać skopiowane do tworzonego testu}
-
-\item{zrodloDanychODBC}{nazwa zrodla danych ODBC, ktorego nalezy uzyc}
 }
 \value{
 [numeric] id_testu utworzonego testu

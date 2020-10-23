@@ -4,6 +4,7 @@
 #' wskaźników, liczbę zdających, parametry warstwic, wartości parametrów modeli
 #' regresji oraz informacje o powiązaniu ze skalami wyników (oszacowań
 #' umiejętności uczniów).
+#' @param P połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}
 #' @param nazwaPliku ciąg znaków - nazwa pliku .RData zawierającego obiekt
 #' klasy \code{listaWskaznikowEWD}, będący wynikiem działania funkcji
 #' \code{\link[EWDwskazniki]{przygotuj_wsk_ewd}})
@@ -17,8 +18,6 @@
 #' są korekty wartości wskaźników dla poszczególnych szkół, obliczone przy
 #' pomocy funkcji \code{\link[EWDwskazniki]{koryguj_wsk_ewd}} (wartość
 #' parametrów \code{doPrezentacji} i \code{nadpisz} zostaną wtedy zignorowane)
-#' @param zrodloDanychODBC opcjonalnie ciąg znaków - nazwa źródła danych ODBC,
-#' dającego dostęp do bazy (domyślnie "ewd")
 #' @return funkcja nic nie zwraca
 #' @details
 #' Wskaźniki, których wartości mają być wczytywane do bazy muszą już być
@@ -31,27 +30,30 @@
 #' z wartością kolumny \code{do_prezentacji} w tablicy \code{sl_wskazniki},
 #' na którą wywołanie tej funkcji nie oddziałuje (trzeba ją modyfikować w bazie
 #' "ręcznie").
-#' @import RODBCext
 #' @export
-zapisz_wskazniki_ewd = function(nazwaPliku, sufiks, doPrezentacji = FALSE,
-                                nadpisz = FALSE, korekta = FALSE,
-                                zrodloDanychODBC = "ewd") {
+zapisz_wskazniki_ewd = function(
+  P,
+  nazwaPliku,
+  sufiks,
+  doPrezentacji = FALSE,
+  nadpisz = FALSE,
+  korekta = FALSE
+) {
 
   stopifnot(is.character(nazwaPliku), length(nazwaPliku) == 1,
             is.character(sufiks), length(sufiks) == 1,
             is.logical(doPrezentacji), length(doPrezentacji) == 1,
             is.logical(korekta), length(korekta) == 1,
-            is.character(zrodloDanychODBC), length(zrodloDanychODBC) == 1)
+  )
   stopifnot(file.exists(nazwaPliku), nadpisz %in% c(TRUE, FALSE),
-            doPrezentacji %in% c(TRUE, FALSE), korekta %in% c(TRUE, FALSE))
+            doPrezentacji %in% c(TRUE, FALSE), korekta %in% c(TRUE, FALSE)
+  )
   sufiks = paste0("_", sub("^_", "", sufiks))
   if (korekta) {
     nadpisz = FALSE
   }
 
-  P = odbcConnect(zrodloDanychODBC)
-  on.exit(odbcClose(P))
-  odbcSetAutoCommit(P, FALSE)
+  DBI::dbBegin(P)
 
   obiekty = load(nazwaPliku)
   message("Wczytano plik '", nazwaPliku, "'.")
@@ -104,21 +106,26 @@ zapisz_wskazniki_ewd = function(nazwaPliku, sufiks, doPrezentacji = FALSE,
       print(rozneWskazniki, row.names = FALSE)
       # jeśli powyżej nie wybuchło, to kasujemy szerokim frontem
       kasowanie = list(
-        liczba_zdajacych =
-          sqlExecute(P, "DELETE FROM liczba_zdajacych WHERE id_ww IN (SELECT id_ww FROM wartosci_wskaznikow WHERE rodzaj_wsk = ? AND wskaznik = ? AND rok_do = ?)",
-                     rozneWskazniki, errors = TRUE),
-        wartosci_wskaznikow =
-          sqlExecute(P, "DELETE FROM wartosci_wskaznikow WHERE rodzaj_wsk = ? AND wskaznik = ? AND rok_do = ?",
-                     rozneWskazniki, errors = TRUE),
-        wskazniki_parametry =
-          sqlExecute(P, "DELETE FROM wskazniki_parametry WHERE rodzaj_wsk = ? AND wskaznik = ? AND rok_do = ?",
-                     rozneWskazniki, errors = TRUE),
-        wskazniki_skalowania =
-          sqlExecute(P, "DELETE FROM wskazniki_skalowania WHERE rodzaj_wsk = ? AND wskaznik = ? AND rok_do = ?",
-                     rozneWskazniki, errors = TRUE),
-        wskazniki =
-          sqlExecute(P, "DELETE FROM wskazniki WHERE rodzaj_wsk = ? AND wskaznik = ? AND rok_do = ?",
-                     rozneWskazniki, errors = TRUE)
+        liczba_zdajacych = .sqlQuery(P,
+          "DELETE FROM liczba_zdajacych WHERE id_ww IN (SELECT id_ww FROM wartosci_wskaznikow WHERE rodzaj_wsk = $1 AND wskaznik = $2 AND rok_do = $3)",
+          rozneWskazniki
+        ),
+        wartosci_wskaznikow = .sqlQuery(P,
+          "DELETE FROM wartosci_wskaznikow WHERE rodzaj_wsk = $1 AND wskaznik = $2 AND rok_do = $3",
+          rozneWskazniki
+        ),
+        wskazniki_parametry = .sqlQuery(P,
+          "DELETE FROM wskazniki_parametry WHERE rodzaj_wsk = $1 AND wskaznik = $2 AND rok_do = $3",
+          rozneWskazniki
+        ),
+        wskazniki_skalowania = .sqlQuery(P,
+          "DELETE FROM wskazniki_skalowania WHERE rodzaj_wsk = $1 AND wskaznik = $2 AND rok_do = $3",
+          rozneWskazniki
+        ),
+        wskazniki = .sqlQuery(P,
+          "DELETE FROM wskazniki WHERE rodzaj_wsk = $1 AND wskaznik = $2 AND rok_do = $3",
+          rozneWskazniki
+        )
       )
     }
     if (korekta) {
@@ -127,34 +134,34 @@ zapisz_wskazniki_ewd = function(nazwaPliku, sufiks, doPrezentacji = FALSE,
       message(" Kasowanie danych w bazie dla wskazników w szkołach:")
       print(rozneWskazniki, row.names = FALSE)
       kasowanie = list(
-        liczba_zdajacych =
-          sqlExecute(P, "DELETE FROM liczba_zdajacych WHERE id_ww IN (SELECT id_ww FROM wartosci_wskaznikow WHERE rodzaj_wsk = ? AND wskaznik = ? AND rok_do = ? AND id_szkoly = ?)",
-                     rozneWskazniki, errors = TRUE),
-        wartosci_wskaznikow =
-          sqlExecute(P, "DELETE FROM wartosci_wskaznikow WHERE rodzaj_wsk = ? AND wskaznik = ? AND rok_do = ? AND id_szkoly = ?",
-                     rozneWskazniki, errors = TRUE)
+        liczba_zdajacych = .sqlQuery(P,
+          "DELETE FROM liczba_zdajacych WHERE id_ww IN (SELECT id_ww FROM wartosci_wskaznikow WHERE rodzaj_wsk = $1 AND wskaznik = $2 AND rok_do = $3 AND id_szkoly = $4)",
+          rozneWskazniki
+        ),
+        wartosci_wskaznikow = .sqlQuery(P,
+          "DELETE FROM wartosci_wskaznikow WHERE rodzaj_wsk = $1 AND wskaznik = $2 AND rok_do = $3 AND id_szkoly = $4",
+          rozneWskazniki
+        )
       )
     }
     # wczytujemy
     if (!korekta) {
       message(" Wczytywanie do tablicy 'wskazniki'.",
               format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
-      w = sqlExecute(P, uloz_insert_z_ramki("wskazniki", wskazniki),
-                     wskazniki, errors = TRUE)
+      w = .sqlQuery(P, uloz_insert_z_ramki("wskazniki", wskazniki), wskazniki)
       message(" Wczytywanie do tablicy 'wskazniki_skalowania'.",  #i 'wskazniki_parametry'.",
               format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
-      w = sqlExecute(P, uloz_insert_z_ramki("wskazniki_skalowania", wskazniki_skalowania),
-                     wskazniki_skalowania, errors = TRUE)
-      #w = sqlExecute(P, uloz_insert_z_ramki("wskazniki_parametry", wskazniki_parametry),
-      #               wskazniki_parametry, errors = TRUE)
+      w = .sqlQuery(P, uloz_insert_z_ramki("wskazniki_skalowania", wskazniki_skalowania),
+                     wskazniki_skalowania)
+      #w = .sqlQuery(P, uloz_insert_z_ramki("wskazniki_parametry", wskazniki_parametry),
+      #               wskazniki_parametry)
     }
     message(" Wczytywanie do tablicy 'wartosci_wskaznikow'.",
             format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
-    idWw = sqlExecute(P, "SELECT max(id_ww) FROM wartosci_wskaznikow",
-                      fetch = TRUE, errors = TRUE)[1, 1]
+    idWw = .sqlQuery(P, "SELECT max(id_ww) FROM wartosci_wskaznikow")[1, 1]
     wartosci_wskaznikow$id_ww = 1:nrow(wartosci_wskaznikow) + idWw
-    w = sqlExecute(P, uloz_insert_z_ramki("wartosci_wskaznikow", wartosci_wskaznikow),
-                   wartosci_wskaznikow, errors = TRUE)
+    w = .sqlQuery(P, uloz_insert_z_ramki("wartosci_wskaznikow", wartosci_wskaznikow),
+                   wartosci_wskaznikow)
     message(" Wczytywanie do tablicy 'liczba_zdajacych'.",
             format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
     lPrzed = nrow(liczba_zdajacych)
@@ -167,11 +174,11 @@ zapisz_wskazniki_ewd = function(nazwaPliku, sufiks, doPrezentacji = FALSE,
            "w wartościach wskaźników.")
     }
     liczba_zdajacych = liczba_zdajacych[, names(liczba_zdajacych) != "id_szkoly"]
-    w = sqlExecute(P, uloz_insert_z_ramki("liczba_zdajacych", liczba_zdajacych),
-                   liczba_zdajacych, errors = TRUE)
+    w = .sqlQuery(P, uloz_insert_z_ramki("liczba_zdajacych", liczba_zdajacych),
+                   liczba_zdajacych)
   }
   # koniec
-  odbcEndTran(P, TRUE)
+  DBI::dbCommit(P)
   message(" Zapis zakończony.", format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"), "\n")
   invisible(NULL)
 }

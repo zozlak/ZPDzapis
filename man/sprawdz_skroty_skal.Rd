@@ -9,7 +9,8 @@ sprawdz_skroty_skal(skroty, P)
 \arguments{
 \item{skroty}{wektor wartosci id_skrotu}
 
-\item{P}{obiekt otwartego polaczenie ODBC}
+\item{P}{połączenie z bazą danych uzyskane z
+\code{DBI::dbConnect(RPostgres::Postgres())}}
 }
 \value{
 [logical] TRUE w wypadku powodzenia funkcji

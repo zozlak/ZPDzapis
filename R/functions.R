@@ -10,29 +10,40 @@
 }
 
 #' @title Wykonuje zapytanie sql i obsluguje bledy
-#' @description
-#' _
-#' @details
-#' _
-#' @param P otwarte polaczenie ODBC
+#' @description _
+#' @details _
+#' @param P połączenie z bazą danych uzyskane z
+#'   \code{DBI::dbConnect(RPostgres::Postgres())}
 #' @param sql polecenie SQL do wykonania
 #' @param dane ramka danych z danymi, które mają zostać wykorzystane w zapytaniu
 #' @return data.frame
-#' @importFrom RODBC odbcClearError odbcGetErrMsg
-#' @import RODBCext
 .sqlQuery = function(P, sql, dane = NULL){
-	odbcClearError(P)
-	tmp = sqlExecute(P, sql, dane, fetch = T, errors = F, stringsAsFactors = F, dec = '.')
-	if(!is.data.frame(tmp)){
-		if(tmp[1] == -2){
-			return(NULL) # brak danych
-		}
-	}
-	blad = odbcGetErrMsg(P)
-	if(length(blad) > 0){
-		stop(paste0(blad, collapse = '\n'))
-	}
-	return(tmp)
+  zap = DBI::dbSendQuery(P, sql)
+  if (!is.null(dane)) {
+    if (!is.null(nrow(dane))) {
+      res = vector('list', nrow(dane))
+      for (i in seq_len(nrow(dane))) {
+        DBI::dbBind(zap, unname(as.list(dane[i, ])))
+        res[[i]] = suppressWarnings(DBI::dbFetch(zap))
+      }
+      return(dplyr::bind_rows(res))
+    } else {
+      DBI::dbBind(zap, unname(as.list(dane)))
+      return(suppressWarnings(DBI::dbFetch(zap)))
+    }
+  } else {
+    return(suppressWarnings(DBI::dbFetch(zap)))
+  }
+}
+
+#' @title Zwraca placeholdery parametrów zapytania SQL
+#' @description _
+#' @param dane cokolwiek, na czym zadziała \code{length()}
+#' @param start numer pierwszego placeholdera
+#' @returns character
+.sqlPlaceholders = function(dane, start = 1) {
+  n = seq(start, start + length(dane) - 1)
+  return(paste0('$', n, collapse = ', '))
 }
 
 #' @title Ponownie rzuca przekazanym wyjatkiem zachowujac jego pierwotne wywolanie

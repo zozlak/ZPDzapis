@@ -4,10 +4,18 @@
 \alias{zapisz_wskazniki_ewd}
 \title{Zapis wskaznikow EWD do bazy}
 \usage{
-zapisz_wskazniki_ewd(nazwaPliku, sufiks, doPrezentacji = FALSE,
-  nadpisz = FALSE, korekta = FALSE, zrodloDanychODBC = "ewd")
+zapisz_wskazniki_ewd(
+  P,
+  nazwaPliku,
+  sufiks,
+  doPrezentacji = FALSE,
+  nadpisz = FALSE,
+  korekta = FALSE
+)
 }
 \arguments{
+\item{P}{połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}}
+
 \item{nazwaPliku}{ciąg znaków - nazwa pliku .RData zawierającego obiekt
 klasy \code{listaWskaznikowEWD}, będący wynikiem działania funkcji
 \code{\link[EWDwskazniki]{przygotuj_wsk_ewd}})}
@@ -25,9 +33,6 @@ do części wynikającej z nazwy konstruktu}
 są korekty wartości wskaźników dla poszczególnych szkół, obliczone przy
 pomocy funkcji \code{\link[EWDwskazniki]{koryguj_wsk_ewd}} (wartość
 parametrów \code{doPrezentacji} i \code{nadpisz} zostaną wtedy zignorowane)}
-
-\item{zrodloDanychODBC}{opcjonalnie ciąg znaków - nazwa źródła danych ODBC,
-dającego dostęp do bazy (domyślnie "ewd")}
 }
 \value{
 funkcja nic nie zwraca

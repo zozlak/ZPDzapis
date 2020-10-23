@@ -8,6 +8,7 @@
 #'
 #' Uwaga, skale tworzone są z flagą \code{do_prezentacji} ustawioną na
 #' \code{FALSE}.
+#' @param P połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}
 #' @param rodzajEgzaminu ciąg znaków
 #' @param rok liczba całkowita
 #' @param sufiks ciąg znaków - sufiks dodawany do opisów skal (nie jest dodawany
@@ -17,22 +18,27 @@
 #' @param dopisz wartość logiczna - czy jeśli istnieją już w bazie jakieś skale
 #' spośród tych, które ma utworzyć funkcja, to pominąć je i utworzyć pozostałe
 #' (zamiast nie zapisać nic i zwrócić błąd)?
-#' @param zrodloDanychODBC nazwa żródła danych ODBC, którego należy użyc
 #' @return wektor liczbowy zawierający id_skali utworzonych skal
 #' @export
-#' @importFrom RODBC odbcConnect odbcClose odbcSetAutoCommit odbcEndTran
 #' @importFrom stats setNames
-#' @import RODBCext
-stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
-                            dopisz = FALSE, zrodloDanychODBC = "EWD") {
+stworz_skale_ewd = function(
+  P,
+  rodzajEgzaminu,
+  rok,
+  sufiks = "",
+  czyRasch = TRUE,
+  dopisz = FALSE
+) {
   stopifnot(is.character(rodzajEgzaminu)       , length(rodzajEgzaminu) == 1,
             is.numeric(rok)                    , length(rok) > 0,
             is.character(sufiks)               , length(sufiks) == 1,
             all(czyRasch %in% c(TRUE, FALSE))  , length(czyRasch) == 1,
-            all(dopisz %in% c(TRUE, FALSE))    , length(dopisz) == 1,
-            is.character(zrodloDanychODBC)     , length(zrodloDanychODBC) == 1)
+            all(dopisz %in% c(TRUE, FALSE))    , length(dopisz) == 1
+  )
   stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2019)
   stopifnot(rodzajEgzaminu %in% c("sprawdzian", "egzamin gimnazjalny", "matura"))
+
+  DBI::dbBegin(P)
 
   # tworzenie listy ze skalami i powiązanymi z nimi częściami egzaminów
   if (rodzajEgzaminu == "sprawdzian") {
@@ -131,11 +137,7 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
     stop("Niektórych opisów skal nie udało się zmapować na opisy testów. Popraw kod funkcji.")
   }
   # sprawdźmy, czy aby skale o takich opisach nie są już zarejestrowane
-  P = odbcConnect(zrodloDanychODBC)
-  on.exit(odbcClose(P))
-  skaleWBazie = sqlExecute(P, "SELECT opis FROM skale", fetch = TRUE)
-  odbcClose(P)
-  on.exit({})
+  skaleWBazie = .sqlQuery(P, "SELECT opis FROM skale")
   skaleWBazie = names(skale)[names(skale) %in% skaleWBazie$opis]
   if (length(skaleWBazie) > 0 & !dopisz) {
     stop("W bazie istnieją już zarejestrowane skale o opisie:\n ",
@@ -166,18 +168,20 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
   for (i in 1:length(skale)) {
     # wyszukiwanie id_testów
     message("Tworzenie skali '", names(skale)[i], "'.")
-    P = odbcConnect(zrodloDanychODBC)
-    on.exit(odbcClose(P))
     idTestow = vector(mode = "list", length = length(skale[[i]]))
     for (j in 1:length(idTestow)) {
-      idTestow[[j]] = sqlExecute(P, "SELECT id_testu
-                                      FROM arkusze JOIN testy USING (arkusz)
-                                      WHERE arkusze.rodzaj_egzaminu = ?
-                                       AND arkusze.czesc_egzaminu = ?
-                                       AND EXTRACT(YEAR FROM data_egzaminu) = ?
-                                       AND ewd = ?",
-                                 list(rodzajEgzaminu, skale[[i]][j], rok, czyEwd),
-                                 fetch = TRUE)
+      idTestow[[j]] = .sqlQuery(
+        P,
+        "SELECT id_testu
+          FROM arkusze JOIN testy USING (arkusz)
+          WHERE
+            arkusze.rodzaj_egzaminu = $1
+            AND arkusze.czesc_egzaminu = $2
+            AND EXTRACT(YEAR FROM data_egzaminu) = $3
+            AND ewd = $4
+        ",
+        list(rodzajEgzaminu, skale[[i]][j], rok, czyEwd)
+      )
       if (nrow(idTestow[[j]]) == 0) {
         stop("Nie udało się znaleźć testów z wynikami egzaminu '", rodzajEgzaminu,
              "', w roku ", rok, " ze źródła ewd=", czyEwd, ".")
@@ -185,89 +189,88 @@ stworz_skale_ewd = function(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
     }
     # wyszukiwanie kryteriow oceny
     idTestow = unique(unlist(idTestow))
-    zapytanie = paste0("SELECT id_testu, id_kryterium, kolejnosc ",
-                       "FROM kryteria_oceny INNER JOIN testy_kryteria USING (id_kryterium) ",
-                       "WHERE id_testu in (",
-                       paste0(rep("?", length(idTestow)), collapse = ", "), ") ",
-                       "ORDER BY id_testu, kolejnosc, id_kryterium")
-    kryteria = sqlExecute(P, zapytanie, as.list(idTestow), fetch = TRUE)
+    zapytanie = paste0("
+      SELECT id_testu, id_kryterium, kolejnosc
+      FROM kryteria_oceny INNER JOIN testy_kryteria USING (id_kryterium)
+      WHERE id_testu in (", .sqlPlaceholders(idTestow), ")
+      ORDER BY id_testu, kolejnosc, id_kryterium
+    ")
+    kryteria = .sqlQuery(P, zapytanie, idTestow)
     kryteria = kryteria[!duplicated(kryteria$id_kryterium), ]
-    odbcClose(P)
-    on.exit({})
     # ewentualne tworzenie nowego testu (jeśli skala obejmuje wiele części egzaminu)
     if (length(skale[[i]]) > 1) {
       opisTestu = paste(rodzajEgzaminu, testyMapa[testy[i]][[1]][1], rok, sep = ";")
-      P = odbcConnect(zrodloDanychODBC)
-      on.exit(odbcClose(P))
-      idPseudtestu = sqlExecute(P, "SELECT id_testu FROM testy WHERE opis = ?",
-                          opisTestu, fetch = TRUE)[, 1]
-      odbcClose(P)
-      on.exit({})
+      idPseudtestu = .sqlQuery(
+        P,
+        "SELECT id_testu FROM testy WHERE opis = $1",
+        opisTestu
+      )[, 1]
       if (length(idPseudtestu) == 0) {
         message(" Tworzenie nowego testu: '", opisTestu, "' (może chwilę potrwać...).")
-        idPseudtestu = stworz_test_z_wielu_czesci(rodzajEgzaminu, skale[[i]],
-                                                  rok, czyEwd, opisTestu,
-                                                  testyMapa[testy[i]][[1]][2],
-                                                  zrodloDanychODBC)
+        idPseudtestu = stworz_test_z_wielu_czesci(
+          P, rodzajEgzaminu, skale[[i]],
+          rok, czyEwd, opisTestu,
+          testyMapa[testy[i]][[1]][2]
+        )
       }
       # przyłączanie kryteriów do tego testu
-      P = odbcConnect(zrodloDanychODBC)
-      on.exit(odbcClose(P))
-      odbcSetAutoCommit(P, FALSE)
-      wBazie = sqlExecute(P, "SELECT count(id_kryterium) FROM testy_kryteria
-                               WHERE id_testu = ?", idPseudtestu, fetch = TRUE)[1, 1]
+      wBazie = .sqlQuery(
+        P,
+        "SELECT count(id_kryterium) FROM testy_kryteria WHERE id_testu = $1",
+        idPseudtestu
+      )[1, 1]
       if (wBazie == 0) {
         message(" Wypełnianie tablicy 'testy_kryteria' dla testu '", opisTestu, "'.")
         kryteria$id_testu = idPseudtestu
         kryteria = cbind(kryteria, popr_dystraktor = NA)
-        sqlExecute(P, "INSERT INTO testy_kryteria (id_testu, id_kryterium,
-                        kolejnosc, popr_dystraktor) VALUES (?, ?, ?, ?)",
-                   kryteria, fetch = TRUE)
+        .sqlQuery(
+          P,
+          "INSERT INTO testy_kryteria (id_testu, id_kryterium,kolejnosc, popr_dystraktor) VALUES ($1, $2, $3, $4)",
+          kryteria
+        )
       }
-      odbcEndTran(P, TRUE)
-      odbcClose(P)
-      on.exit({})
       idTestow = c(idTestow, idPseudtestu)
     }
     # rejestrowanie skali
-    idSkal[i] = stworz_skale(names(skale)[i], "ewd", FALSE, idTestow, zrodloDanychODBC)
+    idSkal[i] = stworz_skale(P, names(skale)[i], "ewd", FALSE, idTestow)
     # przyłączanie kryteriów do skali
-    P = odbcConnect(zrodloDanychODBC)
-    on.exit(odbcClose(P))
-    odbcSetAutoCommit(P, FALSE)
-    kryteria = data.frame(kolejnosc = 1:nrow(kryteria), id_skali = unname(idSkal[i]),
-                          kryteria$id_kryterium)
-    sqlExecute(P, "INSERT INTO skale_elementy (kolejnosc, id_skali, id_kryterium)
-                    VALUES (?, ?, ?)",
-               kryteria, fetch = TRUE)
-    odbcEndTran(P, TRUE)
-    odbcClose(P)
-    on.exit({})
+    kryteria = data.frame(
+      kolejnosc = 1:nrow(kryteria),
+      id_skali = unname(idSkal[i]),
+      kryteria$id_kryterium
+    )
+    .sqlQuery(
+      P,
+      "INSERT INTO skale_elementy (kolejnosc, id_skali, id_kryterium) VALUES ($1, $2, $3)",
+      kryteria
+    )
     # w przypadku skal raschowych spr. i egz. gimn. - dodawanie skalowania
     # dla normalizacji ekwikwantylowej
     temp = gsub("^[^;]+;([^;]+);.*$", "\\1", names(skale)[i])
     if (substr(temp, nchar(temp), nchar(temp)) == "R" &
         substr(temp, 1, 1) %in% c("s", "g")) {
       message(" Dodawanie skalowania dla normalizacji ekwikwantylowej.")
-      P = odbcConnect(zrodloDanychODBC)
-      on.exit(odbcClose(P))
-      odbcSetAutoCommit(P, FALSE)
-      skalowania = data.frame(skalowanie = 1,
-                              opis = 'normalizacja ekwikwantylowa EWD',
-                              estymacja = 'nie dotyczy', id_skali = idSkal[i],
-                              do_prezentacji = FALSE, data = Sys.Date())
-      sqlExecute(P, "INSERT INTO skalowania (skalowanie, opis, estymacja,
-                      id_skali, do_prezentacji, data) VALUES (?, ?, ?, ?, ?, ?)",
-                 skalowania, fetch = TRUE)
-      sqlExecute(P, "INSERT INTO skalowania_grupy (id_skali, skalowanie, grupa)
-                      VALUES (?, ?, ?)",
-                 data.frame(id_skali = idSkal[i], skalowanie = 1, grupa = ""),
-                 fetch = TRUE)
-      odbcEndTran(P, TRUE)
-      odbcClose(P)
-      on.exit({})
+      skalowania = data.frame(
+        skalowanie = 1,
+        opis = 'normalizacja ekwikwantylowa EWD',
+        estymacja = 'nie dotyczy',
+        id_skali = idSkal[i],
+        do_prezentacji = FALSE,
+        data = Sys.Date()
+      )
+      .sqlQuery(
+        P,
+        "INSERT INTO skalowania (skalowanie, opis, estymacja, id_skali, do_prezentacji, data) VALUES ($1, $2, $3, $4, $5, $6)",
+        skalowania
+      )
+      .sqlQuery(
+        P,
+        "INSERT INTO skalowania_grupy (id_skali, skalowanie, grupa) VALUES ($1, $2, $3)",
+        data.frame(id_skali = idSkal[i], skalowanie = 1, grupa = "")
+      )
     }
   }
 
+  DBI::dbCommit(P)
   return(idSkal)
 }

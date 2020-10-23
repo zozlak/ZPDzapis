@@ -4,10 +4,11 @@
 \alias{stworz_skale}
 \title{Tworzy w bazie nowa skale i zwraca jej id_skali}
 \usage{
-stworz_skale(opis, rodzaj, doPrezentacji, idTestow,
-  zrodloDanychODBC = "EWD")
+stworz_skale(P, opis, rodzaj, doPrezentacji, idTestow)
 }
 \arguments{
+\item{P}{połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}}
+
 \item{opis}{opis skali (zwyczajowo w formacie "ZESPOL;EGZ;LATA", np. "paou;s;2002-2011" lub "ewd;gh_h;2012")}
 
 \item{rodzaj}{rodzaj skali (ewd/zrównywanie/ktt)}
@@ -15,8 +16,6 @@ stworz_skale(opis, rodzaj, doPrezentacji, idTestow,
 \item{doPrezentacji}{czy skala ma być oznaczona jako przeznaczona do prezentacji}
 
 \item{idTestow}{wektor id testów, z którymi ma być powiązana skala}
-
-\item{zrodloDanychODBC}{nazwa zrodla danych ODBC, ktorego nalezy uzyc}
 }
 \value{
 [numeric] id_skali utworzonej skali

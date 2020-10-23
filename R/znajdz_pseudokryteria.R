@@ -3,9 +3,9 @@
 #' _
 #' @param kryteria macierz id_kryterium - kazdy wiersz opisuje jedno pseudokryterium
 #' @param opisy wektor opisow pseudokryteriow
-#' @param P obiekt otwartego polaczenie ODBC
+#' @param P połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}
 #' @return [numeric vector] wektor odnalezionych i/lub utworzonych id_pseudokryteriow
-znajdz_pseudokryteria = function(kryteria, opisy, P){
+znajdz_pseudokryteria = function(P, kryteria, opisy){
 	kryteria = as.matrix(kryteria) # na wypadek, gdyby "kryteria" byly wektorem
 	opisyBaza = .sqlQuery(P, "SELECT opis FROM pseudokryteria_oceny")[, 1]
 	pkrytBaza = pobierz_pseudokryteria(P)
@@ -34,14 +34,14 @@ znajdz_pseudokryteria = function(kryteria, opisy, P){
 				stop(sprintf('w wierszu %d trzeba utworzyc nowe pseudokryterium, jednak podany dla niego opis wystepuje juz w bazie', i))
 			}
 
-			idPkryt[i] = .sqlQuery(P, "SELECT nextval('pseudokryteria_id_pseudokryterium_seq')")[1, 1]
-			zap = "INSERT INTO pseudokryteria_oceny (id_pseudokryterium, opis) VALUES (?, ?)"
+			idPkryt[i] = as.integer(.sqlQuery(P, "SELECT nextval('pseudokryteria_id_pseudokryterium_seq')")[1, 1])
+			zap = "INSERT INTO pseudokryteria_oceny (id_pseudokryterium, opis) VALUES ($1, $2)"
 			.sqlQuery(P, zap, list(idPkryt[i], opisy[i]))
 			for(j in wiersz){
 				if(is.na(j)){
 					next
 				}
-			  zap = "INSERT INTO pseudokryteria_oceny_kryteria (id_pseudokryterium, id_kryterium) VALUES (?, ?)"
+			  zap = "INSERT INTO pseudokryteria_oceny_kryteria (id_pseudokryterium, id_kryterium) VALUES ($1, $2)"
 				.sqlQuery(P, zap, list(idPkryt[i], j))
 			}
 		}

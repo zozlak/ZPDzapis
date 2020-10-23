@@ -1,15 +1,15 @@
 Package: ZPDzapis
 Title: Funkcje zapisu danych do bazy ZPD
-Version: 0.4.4
+Version: 0.5.0
 Authors@R: c(
   person("Mateusz", "Zoltak", , "zozlak@zozlak.org", role = c("aut", "cre")),
   person("Grzegorz", "Golonka", , "ggolonka@o2.pl", role = c("aut")),
   person("Tomasz", "Zoltak", , "tomek@zozlak.org", role = c("aut")))
 Description: Funkcje zapisu danych do bazy ZPD.
-Depends:
-    RODBCext (>= 0.3.1)
 Imports:
-    RODBC
+    dplyr,
+    DBI,
+    RPostgres
 Suggests:
     knitr,
     testthat
@@ -17,4 +17,4 @@ License: MIT + file LICENSE
 LazyData: true
 Encoding: UTF-8
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1

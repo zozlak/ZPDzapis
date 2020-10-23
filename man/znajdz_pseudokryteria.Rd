@@ -4,14 +4,14 @@
 \alias{znajdz_pseudokryteria}
 \title{Odnajduje i tworzy pseudokryteria na podstawie list ich elementow}
 \usage{
-znajdz_pseudokryteria(kryteria, opisy, P)
+znajdz_pseudokryteria(P, kryteria, opisy)
 }
 \arguments{
+\item{P}{połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}}
+
 \item{kryteria}{macierz id_kryterium - kazdy wiersz opisuje jedno pseudokryterium}
 
 \item{opisy}{wektor opisow pseudokryteriow}
-
-\item{P}{obiekt otwartego polaczenie ODBC}
 }
 \value{
 [numeric vector] wektor odnalezionych i/lub utworzonych id_pseudokryteriow

@@ -1,4 +1,10 @@
 --------------------
+Zmiany w ZPDzapis 0.5.0 (23.10.2020)
+
+Przepisanie z RODBCext na RPostgres. Wymaga intensywnego testowania
+i niewątpliwie poprawek.
+
+--------------------
 Zmiany w ZPDzapis 0.4.4 (14.09.2019)
 
 Uaktualnienia:

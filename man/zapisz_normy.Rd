@@ -4,17 +4,16 @@
 \alias{zapisz_normy}
 \title{Zapis normalizacji ekwikwantylowej do bazy}
 \usage{
-zapisz_normy(normy, prefiksRok, zrodloDanychODBC = "EWD")
+zapisz_normy(P, normy, prefiksRok)
 }
 \arguments{
+\item{P}{połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}}
+
 \item{normy}{wektor opisujący unormowanie, typowo zwrócony przez funkcję
 \code{\link[ZPD]{normalizuj}}}
 
 \item{prefiksRok}{ciąg znaków postaci \code{'pr'}, gdzie \code{p} oznacza
 prefiks części egzaminu, a \code{r} rok (zapis czterema cyframi)}
-
-\item{zrodloDanychODBC}{opcjonalnie nazwa źródła danych ODBC, dającego dostęp
-do bazy (domyślnie "EWD")}
 }
 \value{
 funkcja nic nie zwraca

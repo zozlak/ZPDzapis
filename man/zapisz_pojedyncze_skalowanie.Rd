@@ -4,24 +4,30 @@
 \alias{zapisz_pojedyncze_skalowanie}
 \title{Zapis wynikow skalowania do bazy}
 \usage{
-zapisz_pojedyncze_skalowanie(x, doPrezentacji = FALSE, nadpisz = FALSE,
-  oszacowaniaDoCopy = TRUE, zrodloDanychODBC = "ewd", proba = -1)
+zapisz_pojedyncze_skalowanie(
+  P,
+  x,
+  doPrezentacji = FALSE,
+  nadpisz = FALSE,
+  oszacowaniaDoCopy = TRUE,
+  proba = -1
+)
 }
 \arguments{
+\item{P}{połączenie z bazą danych uzyskane z
+\code{DBI::dbConnect(RPostgres::Postgres())}}
+
 \item{x}{obiekt klasy \code{wynikiSkalowania}}
 
-\item{doPrezentacji}{wartość logiczna - jeśli tworzone będzie nowe skalowanie,
-to czy ma ono zostać oznaczone jako 'do przezentacji'?}
+\item{doPrezentacji}{wartość logiczna - jeśli tworzone będzie nowe
+skalowanie, to czy ma ono zostać oznaczone jako 'do przezentacji'?}
 
 \item{nadpisz}{wartość logiczna - czy elementy skali powinny być nadpisane?}
 
 \item{oszacowaniaDoCopy}{wartość logiczna - czy zamiast wczytywać oszacowania
 umiejętności do tablicy \code{skalowania_obserwacje} przy pomocy poleceń
-\code{INSERT} przez ODBC (jak wszystko inne), wygenerować plik csv, który
-będzie można wczytać do bazy komendą \code{COPY} przez \code{psql}?}
-
-\item{zrodloDanychODBC}{opcjonalnie ciąg znaków - nazwa źródła danych ODBC,
-dającego dostęp do bazy (domyślnie "ewd")}
+\code{INSERT} (jak wszystko inne), wygenerować plik csv, który będzie można
+wczytać do bazy komendą \code{COPY} przez \code{psql}?}
 
 \item{proba}{opcjonalnie liczba natrualna - wielkość próby, jaka ma być
 wylosowana z elementu \code{skalowanie_obserwacje} przed dokonaniem zapisu;
@@ -34,8 +40,8 @@ funkcja nic nie zwraca
 Funkcja zapisuje do bazy wyniki pojedynczego skalowania
 }
 \details{
-Jeśli argument \code{nadpisz} ma wartość \code{TRUE} i w bazie jest już
-zapisane dane skalowanie, to funkcja wymaga, aby obiekt \code{x} miał
+Jeśli argument \code{nadpisz} ma wartość \code{TRUE} i w bazie jest
+już zapisane dane skalowanie, to funkcja wymaga, aby obiekt \code{x} miał
 wszystkie elementy, które już są zapisane w bazie. Np. jeśli w bazie zapisano
 powiązane z danym skalowaniem parametry, \code{x} musi zawierać element
 \code{skalowania_elementy} itd. Wszystkie wpisy w bazie, powiązane z danym
@@ -46,9 +52,9 @@ zapisane dane skalowanie, funkcja najpierw sprawdzi, czy dane przekazywane do
 zapisania, które odnoszą się do tabeli \code{skalowania_grupy} są dokładnie
 takie same, jak dane już zapisane w bazie. Jeśli tak, spróbuje dopisać dane
 odnoszące się do tablic \code{skalowania_elementy},
-\code{skalowania_obserwcje}, i \code{normy} do danych już istniejących
-w bazie. Jeśli napotka przy tym jakieś konflikty, zaniecha zapisu
-jakichkolwiek danych.
+\code{skalowania_obserwcje}, i \code{normy} do danych już istniejących w
+bazie. Jeśli napotka przy tym jakieś konflikty, zaniecha zapisu jakichkolwiek
+danych.
 
 Oszacowania umiejętności domyślnie (\code{oszacowaniaDoCopy = TRUE}) nie są
 wczytywane do bazy, gdyż trwałoby to koszmarnie długo (po 4-6 h na część
@@ -57,8 +63,8 @@ zip) plik csv (w formacie zgodnym z wynikiem działania
 \code{\link{write.csv}}), który należy przenieść na Odrę i stamtąd wczytać go
 do bazy komendą \code{COPY} programu \code{psql}.
 
-Uwaga! Jeśli \code{oszacowaniaDoCopy = TRUE} i \code{nadpisz = TRUE}, to
-w ramach wywołania funkcji usunięte zostaną dotychczasowe wartości tablicy
+Uwaga! Jeśli \code{oszacowaniaDoCopy = TRUE} i \code{nadpisz = TRUE}, to w
+ramach wywołania funkcji usunięte zostaną dotychczasowe wartości tablicy
 \code{skalowania_obserwacje} powiązane z danymi skalami-skalowaniami, ale
 nowe nie zostaną wczytane automatycznie.
 }

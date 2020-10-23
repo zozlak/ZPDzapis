@@ -4,17 +4,16 @@
 \alias{edytuj_skale}
 \title{Zapisuje elementy skali do bazy danych}
 \usage{
-edytuj_skale(idSkali, elementy, nadpisz = FALSE,
-  zrodloDanychODBC = "EWD")
+edytuj_skale(P, idSkali, elementy, nadpisz = FALSE)
 }
 \arguments{
+\item{P}{połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}}
+
 \item{idSkali}{identyfikator skali, ktora ma zostac zapisana (typowo uzyskany z funkcji "stworz_skale()")}
 
 \item{elementy}{ramka danych opisujaca elementy skali - patrz http://zpd.ibe.edu.pl/doku.php?id=r_zpd_skale}
 
 \item{nadpisz}{czy nadpisac skale, jesli jest juz zdefiniowana w bazie danych}
-
-\item{zrodloDanychODBC}{nazwa zrodla danych ODBC, ktorego nalezy uzyc}
 }
 \value{
 [data.frame] zapisane elementy skali
