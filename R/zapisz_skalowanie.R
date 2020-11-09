@@ -276,9 +276,9 @@ zapisz_pojedyncze_skalowanie = function(
     kryteria = x$usunieteKryteria[grep("^k_", x$usunieteKryteria)]
     kryteria = as.numeric(sub("^k_", "", kryteria))
     if (length(kryteria) > 0) {
-      w = try(.sqlQuery(P, "DELETE FROM skale_elementy WHERE id_skali = $1 AND id_kryterium = $2",
+      w = try(.sqlQuery(P, "DELETE FROM skale_elementy WHERE id_skali = $1 AND id_kryterium = $2 RETURNING id_kryterium",
                           data.frame(idSkali, kryteria)))
-      if (w > 0) {
+      if (nrow(w) > 0) {
         message("   Usunięto ze skali kryteria/um o id_kryterium:\n   - ",
                 paste0(kryteria, collapse = ",\n   - "), ".\n")
       }
@@ -286,9 +286,9 @@ zapisz_pojedyncze_skalowanie = function(
     pseudokryteria = x$usunieteKryteria[grep("^p_", x$usunieteKryteria)]
     pseudokryteria = as.numeric(sub("^p_", "", pseudokryteria))
     if (length(pseudokryteria) > 0) {
-      w = try(.sqlQuery(P, "DELETE FROM skale_elementy WHERE id_skali = $1 AND id_pseudokryterium = $2",
+      w = try(.sqlQuery(P, "DELETE FROM skale_elementy WHERE id_skali = $1 AND id_pseudokryterium = $2 RETURNING id_pseudokryterium",
                      data.frame(idSkali, pseudokryteria)))
-      if (w > 0) {
+      if (nrow(w) > 0) {
         message("   Usunięto ze skali pseudokryteria/um o id_pseudokryterium:\n   - ",
                 paste0(pseudokryteria, collapse = ",\n   - "), ".\n")
       }

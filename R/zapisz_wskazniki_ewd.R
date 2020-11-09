@@ -43,7 +43,7 @@ zapisz_wskazniki_ewd = function(
   stopifnot(is.character(nazwaPliku), length(nazwaPliku) == 1,
             is.character(sufiks), length(sufiks) == 1,
             is.logical(doPrezentacji), length(doPrezentacji) == 1,
-            is.logical(korekta), length(korekta) == 1,
+            is.logical(korekta), length(korekta) == 1
   )
   stopifnot(file.exists(nazwaPliku), nadpisz %in% c(TRUE, FALSE),
             doPrezentacji %in% c(TRUE, FALSE), korekta %in% c(TRUE, FALSE)
