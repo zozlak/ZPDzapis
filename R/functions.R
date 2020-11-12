@@ -22,9 +22,19 @@
   if (!is.null(dane)) {
     if (!is.null(nrow(dane))) {
       res = vector('list', nrow(dane))
+      pb = NULL
+      if (nrow(dane) > 100) {
+        pb = txtProgressBar(0, nrow(dane), style = 3)
+      }
       for (i in seq_len(nrow(dane))) {
         DBI::dbBind(zap, unname(as.list(dane[i, ])))
         res[[i]] = suppressWarnings(DBI::dbFetch(zap))
+        if (!is.null(pb)) {
+          setTxtProgressBar(pb, i)
+        }
+      }
+      if (!is.null(pb)) {
+        close(pb)
       }
       return(dplyr::bind_rows(res))
     } else {
