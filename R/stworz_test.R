@@ -1,26 +1,24 @@
 #' @title Tworzy nowy test (także jako kompilację wskazanych testów)
 #' @description
 #' _
+#' @param P połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}
 #' @param ewd czy będzie to test ewd [logical]
 #' @param opis opis testu
 #' @param data data testu
 #' @param rodzajEgzaminu rodzaj egzaminu powiązany z testem (lub NA)
 #' @param czescEgzaminu część egzaminu powiązana z testem (lub NA)
 #' @param idTestow wektor id_testu testów, których kryteria oceny mają zostać skopiowane do tworzonego testu
-#' @param zrodloDanychODBC nazwa zrodla danych ODBC, ktorego nalezy uzyc
 #' @return [numeric] id_testu utworzonego testu
 #' @export
-#' @importFrom RODBC odbcConnect odbcClose odbcSetAutoCommit odbcEndTran
 #' @importFrom stats na.exclude
-#' @import RODBCext
 stworz_test = function(
+  P,
 	ewd,
 	opis,
 	data,
   rodzajEgzaminu = NA_character_,
 	czescEgzaminu = NA_character_,
-	idTestow = NULL,
-	zrodloDanychODBC = 'EWD'
+	idTestow = NULL
 ){
   stopifnot(
     is.vector(ewd), is.logical(ewd), length(ewd) == 1, !is.na(ewd),
@@ -28,20 +26,14 @@ stworz_test = function(
     is.vector(data), length(data) == 1, all(!is.na(data)), class(as.Date(data)) == 'Date',
     is.vector(rodzajEgzaminu), is.character(rodzajEgzaminu), length(rodzajEgzaminu) == 1,
     is.vector(czescEgzaminu), is.character(czescEgzaminu), length(czescEgzaminu) == 1,
-    is.null(idTestow) | is.vector(idTestow) & is.numeric(idTestow),
-    is.vector(zrodloDanychODBC), is.character(zrodloDanychODBC), length(zrodloDanychODBC) == 1
+    is.null(idTestow) | is.vector(idTestow) & is.numeric(idTestow)
   )
-	P = odbcConnect(zrodloDanychODBC)
-	on.exit({
-	  odbcClose(P)
-	})
 
-	odbcSetAutoCommit(P, FALSE)
-	.sqlQuery(P, "BEGIN;")
+  DBI::dbBegin(P)
 
-	idTestu = .sqlQuery(P, "SELECT nextval('testy_id_testu_seq')")[1, 1]
+	idTestu = as.integer(.sqlQuery(P, "SELECT nextval('testy_id_testu_seq')")[1, 1])
 	.sqlQuery(P,
-		"INSERT INTO testy (id_testu, opis, data, ewd, rodzaj_egzaminu, czesc_egzaminu) VALUES (?, ?, ?, ?, ?, ?)",
+		"INSERT INTO testy (id_testu, opis, data, ewd, rodzaj_egzaminu, czesc_egzaminu) VALUES ($1, $2, $3, $4, $5, $6)",
 		list(idTestu, opis, data, ewd, rodzajEgzaminu, czescEgzaminu)
 	)
 
@@ -66,7 +58,7 @@ stworz_test = function(
 		}
 	}
 
-	odbcEndTran(P, TRUE)
+	DBI::dbCommit(P)
 
 	return(idTestu)
 }

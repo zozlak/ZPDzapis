@@ -4,10 +4,18 @@
 \alias{stworz_skale_ewd}
 \title{Tworzy w bazie skale zwiazane z obliczaniem wskaznikow EWD}
 \usage{
-stworz_skale_ewd(rodzajEgzaminu, rok, sufiks = "", czyRasch = TRUE,
-  dopisz = FALSE, zrodloDanychODBC = "EWD")
+stworz_skale_ewd(
+  P,
+  rodzajEgzaminu,
+  rok,
+  sufiks = "",
+  czyRasch = TRUE,
+  dopisz = FALSE
+)
 }
 \arguments{
+\item{P}{połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}}
+
 \item{rodzajEgzaminu}{ciąg znaków}
 
 \item{rok}{liczba całkowita}
@@ -21,8 +29,6 @@ Kalkulatora EWD?}
 \item{dopisz}{wartość logiczna - czy jeśli istnieją już w bazie jakieś skale
 spośród tych, które ma utworzyć funkcja, to pominąć je i utworzyć pozostałe
 (zamiast nie zapisać nic i zwrócić błąd)?}
-
-\item{zrodloDanychODBC}{nazwa żródła danych ODBC, którego należy użyc}
 }
 \value{
 wektor liczbowy zawierający id_skali utworzonych skal

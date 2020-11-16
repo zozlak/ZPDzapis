@@ -7,16 +7,16 @@
 pobierz_pseudokryteria(P)
 }
 \arguments{
-\item{P}{otwarte połączenie ODBC}
+\item{P}{połączenie z bazą danych uzyskane z
+\code{DBI::dbConnect(RPostgres::Postgres())}}
 }
 \value{
 [character] wektor pseudokryteriow znajdujacych sie w bazie
 }
 \description{
 Nazwy elementow zwracanego wektora to id_pseudokryterium
-Elementy zwracanego wektora to posortowane rosnaco id_kryterium
-nalezacych do danego pseudokryterium, zlaczone w lancuch znakow
-separatorem '|'
+Elementy zwracanego wektora to posortowane rosnaco id_kryterium nalezacych do
+danego pseudokryterium, zlaczone w lancuch znakow separatorem '|'
 }
 \details{
 _

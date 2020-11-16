@@ -4,37 +4,44 @@
 \alias{zapisz_skalowanie}
 \title{Zapis wynikow skalowania do bazy}
 \usage{
-zapisz_skalowanie(nazwaPliku, doPrezentacji = FALSE, nadpisz = FALSE,
-  oszacowaniaDoCopy = TRUE, zrodloDanychODBC = "ewd")
+zapisz_skalowanie(
+  P,
+  nazwaPliku,
+  doPrezentacji = FALSE,
+  nadpisz = FALSE,
+  oszacowaniaDoCopy = TRUE
+)
 }
 \arguments{
+\item{P}{połączenie z bazą danych uzyskane z
+\code{DBI::dbConnect(RPostgres::Postgres())}}
+
 \item{nazwaPliku}{ciąg znaków - nazwa pliku .RData, zawierającego wyniki
-skalowania (typowo zapisanego przez funkcję \code{\link[EWDskale]{skaluj_spr}},
+skalowania (typowo zapisanego przez funkcję
+\code{\link[EWDskale]{skaluj_spr}},
 \code{\link[EWDskale]{skaluj_egz_gimn}},
 \code{\link[EWDskale]{skaluj_egz_gimn_rasch}},
 \code{\link[EWDskale]{skaluj_matura}} lub
 \code{\link[EWDskale]{skaluj_matura_rasch}})}
 
-\item{doPrezentacji}{wartość logiczna - jeśli tworzone będzie nowe skalowanie,
-to czy ma ono zostać oznaczone jako 'do przezentacji'?}
+\item{doPrezentacji}{wartość logiczna - jeśli tworzone będzie nowe
+skalowanie, to czy ma ono zostać oznaczone jako 'do przezentacji'?}
 
 \item{nadpisz}{wartość logiczna - czy elementy skali powinny być nadpisane?}
 
 \item{oszacowaniaDoCopy}{wartość logiczna - czy zamiast wczytywać oszacowania
 umiejętności do tablicy \code{skalowania_obserwacje} przy pomocy poleceń
-\code{INSERT} przez ODBC (jak wszystko inne), wygenerować plik csv, który
-będzie można wczytać do bazy komendą \code{COPY} przez \code{psql}?}
-
-\item{zrodloDanychODBC}{opcjonalnie ciąg znaków - nazwa źródła danych ODBC,
-dającego dostęp do bazy (domyślnie "ewd")}
+\code{INSERT} (jak wszystko inne), wygenerować plik csv, który będzie można
+wczytać do bazy komendą \code{COPY} przez \code{psql}?}
 }
 \value{
 funkcja nic nie zwraca
 }
 \description{
-Funkcja zapisuje do bazy wyniki skalowania: wartości parametrów, oszacowania
-umiejętności uczniów, ew. normy (skale raschowe). W miarę potrzeby tworzy
-nowe skalowanie w bazie, lub dopisuje do/nadpisuje już istniejące(go).
+Funkcja zapisuje do bazy wyniki skalowania: wartości parametrów,
+oszacowania umiejętności uczniów, ew. normy (skale raschowe). W miarę
+potrzeby tworzy nowe skalowanie w bazie, lub dopisuje do/nadpisuje już
+istniejące(go).
 }
 \details{
 W kwestii sposobu działania parametru \code{nadpisz}, patrz sekcja
@@ -47,8 +54,8 @@ zip) plik csv (w formacie zgodnym z wynikiem działania
 \code{\link{write.csv}}), który należy przenieść na Odrę i stamtąd wczytać go
 do bazy komendą \code{COPY} programu \code{psql}.
 
-Uwaga! Jeśli \code{oszacowaniaDoCopy = TRUE} i \code{nadpisz = TRUE}, to
-w ramach wywołania funkcji usunięte zostaną dotychczasowe wartości tablicy
+Uwaga! Jeśli \code{oszacowaniaDoCopy = TRUE} i \code{nadpisz = TRUE}, to w
+ramach wywołania funkcji usunięte zostaną dotychczasowe wartości tablicy
 \code{skalowania_obserwacje} powiązane z danymi skalami-skalowaniami, ale
 nowe nie zostaną wczytane automatycznie.
 }

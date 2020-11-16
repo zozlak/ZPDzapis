@@ -4,11 +4,19 @@
 \alias{stworz_nowe_wskazniki_ewd}
 \title{Zapis wskaznikow EWD do bazy}
 \usage{
-stworz_nowe_wskazniki_ewd(wskaznikiWzorce, wyrazeniaZmienWskaznik,
-  wyrazeniaZmienNazwy = NULL, wyrazeniaZmienOpisy = NULL,
-  okres = NULL, doPrezentacji = FALSE, zrodloDanychODBC = "ewd")
+stworz_nowe_wskazniki_ewd(
+  P,
+  wskaznikiWzorce,
+  wyrazeniaZmienWskaznik,
+  wyrazeniaZmienNazwy = NULL,
+  wyrazeniaZmienOpisy = NULL,
+  okres = NULL,
+  doPrezentacji = FALSE
+)
 }
 \arguments{
+\item{P}{połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}}
+
 \item{wskaznikiWzorce}{wektor ciągów znaków - identyfikatory wskaźników,
 które już istnieją w bazie i mają posłużyć za wzorce dla nowotworzonych;}
 
@@ -33,9 +41,6 @@ wskaźnikom w kolumnie \code{okres} tablicy \code{sl_wskazniki}}
 
 \item{doPrezentacji}{wartość logiczna, zostanie przypisana nowym wskaźnikom
 w kolumnie \code{do_prezentacji} tablicy \code{sl_wskazniki}}
-
-\item{zrodloDanychODBC}{opcjonalnie ciąg znaków - nazwa źródła danych ODBC,
-dającego dostęp do bazy (domyślnie "ewd")}
 }
 \value{
 funkcja nic nie zwraca

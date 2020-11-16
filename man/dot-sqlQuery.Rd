@@ -7,7 +7,8 @@
 .sqlQuery(P, sql, dane = NULL)
 }
 \arguments{
-\item{P}{otwarte polaczenie ODBC}
+\item{P}{połączenie z bazą danych uzyskane z
+\code{DBI::dbConnect(RPostgres::Postgres())}}
 
 \item{sql}{polecenie SQL do wykonania}
 

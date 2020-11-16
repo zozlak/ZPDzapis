@@ -4,10 +4,19 @@
 \alias{stworz_test_z_wielu_czesci}
 \title{Tworzenie testów będących złączeniem kilku części egzaminu.}
 \usage{
-stworz_test_z_wielu_czesci(rodzajEgzaminu, czesciEgzaminu, rokEgzaminu,
-  czyEwd, opis, czescEgzaminuZapisz = NA, zrodloDanychODBC = "EWD")
+stworz_test_z_wielu_czesci(
+  P,
+  rodzajEgzaminu,
+  czesciEgzaminu,
+  rokEgzaminu,
+  czyEwd,
+  opis,
+  czescEgzaminuZapisz = NA
+)
 }
 \arguments{
+\item{P}{połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}}
+
 \item{rodzajEgzaminu}{rodzaj egzaminu ("sprawdzian" / "egzamin gimnazjalny" / "matura")}
 
 \item{czesciEgzaminu}{wektor części egzaminu, które mają zostać połączone}
@@ -21,9 +30,6 @@ stworz_test_z_wielu_czesci(rodzajEgzaminu, czesciEgzaminu, rokEgzaminu,
 \item{czescEgzaminuZapisz}{opcjonalnie nazwa części egzaminu, która zostanie
 przypisana nowej skali w kolumnie \code{czesz_egzaminu} tablicy \code{testy}
 (znajduje zastosowanie w odniesieniu do egzaminu gimnazjalnego)}
-
-\item{zrodloDanychODBC}{opcjonalnie nazwa źródła danych ODBC, dającego dostęp do bazy
-(domyślnie "EWD")}
 }
 \value{
 id_testu utworzonego testu

@@ -1,20 +1,18 @@
 #' @title Zapisuje elementy skali do bazy danych
 #' @description
 #' Patrz http://zpd.ibe.edu.pl/doku.php?id=r_zpd_skale
+#' @param P połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}
 #' @param idSkali identyfikator skali, ktora ma zostac zapisana (typowo uzyskany z funkcji "stworz_skale()")
 #' @param elementy ramka danych opisujaca elementy skali - patrz http://zpd.ibe.edu.pl/doku.php?id=r_zpd_skale
 #' @param nadpisz czy nadpisac skale, jesli jest juz zdefiniowana w bazie danych
-#' @param zrodloDanychODBC nazwa zrodla danych ODBC, ktorego nalezy uzyc
 #' @return [data.frame] zapisane elementy skali
 #' @export
-#' @importFrom RODBC odbcConnect odbcClose odbcSetAutoCommit odbcEndTran
 #' @importFrom stats na.exclude
-#' @import RODBCext
 edytuj_skale = function(
+  P,
 	idSkali,
 	elementy,
-	nadpisz = FALSE,
-	zrodloDanychODBC = 'EWD'
+	nadpisz = FALSE
 ){
   stopifnot(
     is.vector(idSkali), is.numeric(idSkali), length(idSkali) == 1, !is.na(idSkali),
@@ -29,13 +27,7 @@ edytuj_skale = function(
     stop('dla niektorych elementow skali zdefiniowano jednoczesnie id_kryterium/id_pseudokryterium, jak i wartosci w kolumnach id_kryterium_N')
   }
 
-	P = odbcConnect(zrodloDanychODBC)
-	on.exit({
-	  odbcClose(P)
-	})
-
-	odbcSetAutoCommit(P, FALSE)
-	.sqlQuery(P, "BEGIN")
+  DBI::dbBegin(P)
 
 	kolOpis = grep('^opis$', names(elementy))
 	#<-- na wypadek factor-ow
@@ -56,8 +48,8 @@ edytuj_skale = function(
     nadpisz | !idSkali %in% .sqlQuery(P, "SELECT DISTINCT id_skali FROM skale_elementy")[, 1]
   )
 	if(any(
-	  0 != .sqlQuery(P, "SELECT count(*) FROM skalowania_elementy WHERE id_skali = ?", idSkali)[1, 1],
-	  0 != .sqlQuery(P, "SELECT count(*) FROM skalowania_obserwacje WHERE id_skali = ?", idSkali)[1, 1]
+	  0 != .sqlQuery(P, "SELECT count(*) FROM skalowania_elementy WHERE id_skali = $1", idSkali)[1, 1],
+	  0 != .sqlQuery(P, "SELECT count(*) FROM skalowania_obserwacje WHERE id_skali = $1", idSkali)[1, 1]
 	)){
 	  stop('nie mozna edytowac skali - ma ona juz wpisane do bazy parametry zadan i/lub estymacje umiejetnosci uczniow')
 	}
@@ -86,7 +78,7 @@ edytuj_skale = function(
 	#-->
 
 	#<-- odnajdowanie id_pseudokryterium i ew. tworzenie pseudokryteriow
-	tmp = znajdz_pseudokryteria(kryteria, elementy$opis, P)
+	tmp = znajdz_pseudokryteria(P, kryteria, elementy$opis)
 	elementy$id_pseudokryterium[!is.na(tmp)] = tmp[!is.na(tmp)]
 	#-->
 
@@ -94,7 +86,7 @@ edytuj_skale = function(
 	tmp = .sqlQuery(P, "SELECT id_pseudokryterium, id_kryterium FROM pseudokryteria_oceny_kryteria")
 	tmp = tmp$id_kryterium[tmp$id_pseudokryterium %in% na.exclude(elementy$id_pseudokryterium)]
 	kryt = unique(na.exclude(append(elementy$id_kryterium, tmp)))
-	tmp = .sqlQuery(P, "SELECT id_kryterium FROM testy_kryteria JOIN skale_testy USING (id_testu) WHERE id_skali = ?", idSkali)[, 1]
+	tmp = .sqlQuery(P, "SELECT id_kryterium FROM testy_kryteria JOIN skale_testy USING (id_testu) WHERE id_skali = $1", idSkali)[, 1]
 	if(any(is.na(match(kryt, tmp)))){
 	  stop("nie wszystkie (pseudo)kryteria oceny skali pochodzą z testów powiązanych ze skalą")
 	}
@@ -118,11 +110,11 @@ edytuj_skale = function(
 	#-->
 
 	if(nadpisz){
-	  .sqlQuery(P, "DELETE FROM skale_elementy WHERE id_skali = ?", idSkali)
+	  .sqlQuery(P, "DELETE FROM skale_elementy WHERE id_skali = $1", idSkali)
 	}
 
 	#<-- zapis do bazy
-  zap = "INSERT INTO skale_elementy (kolejnosc, id_skali, id_kryterium, id_pseudokryterium, id_skrotu) VALUES (?, ?, ?, ?, ?)"
+  zap = "INSERT INTO skale_elementy (kolejnosc, id_skali, id_kryterium, id_pseudokryterium, id_skrotu) VALUES ($1, $2, $3, $4, $5)"
   tmp = data.frame(
     1:nrow(elementy),
     rep(idSkali, nrow(elementy)),
@@ -133,6 +125,6 @@ edytuj_skale = function(
   .sqlQuery(P, zap, tmp)
 	#-->
 
-	odbcEndTran(P, TRUE)
+	DBI::dbCommit(P)
 	return(elementy)
 }
