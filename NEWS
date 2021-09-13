@@ -1,8 +1,14 @@
 --------------------
-Zmiany w ZPDzapis 0.5.2 (14.09.2019)
+Zmiany w ZPDzapis 0.5.2 (13.09.2021)
 
 Uaktualnienia:
 - objęto działaniem funkcji stworz_skale_ewd() rok 2021.
+
+Usprawnienia:
+- stworz_skale() i stworz_test_z_wielu_czesci() otrzymały nowy argument pominTransakcje, który pozwala wołać je z wewnątrz stworz_skale_ewd().
+
+Naprawione błędy:
+- stworz_skale_ewd() nie wywołuje błędu DBI/RPostgres związanego z próbą tworzenia zagnieżdżonych transakcji.
 
 --------------------
 Zmiany w ZPDzapis 0.5.1 (9.11.2020)

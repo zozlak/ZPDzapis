@@ -11,7 +11,8 @@ stworz_test_z_wielu_czesci(
   rokEgzaminu,
   czyEwd,
   opis,
-  czescEgzaminuZapisz = NA
+  czescEgzaminuZapisz = NA,
+  pominTransakcje = FALSE
 )
 }
 \arguments{
@@ -30,6 +31,10 @@ stworz_test_z_wielu_czesci(
 \item{czescEgzaminuZapisz}{opcjonalnie nazwa części egzaminu, która zostanie
 przypisana nowej skali w kolumnie \code{czesz_egzaminu} tablicy \code{testy}
 (znajduje zastosowanie w odniesieniu do egzaminu gimnazjalnego)}
+
+\item{pominTransakcje}{wartość logiczna pozwalająca wywołać funkcję tak, aby nie używała
+transakcji - co do zasady nie należy stosować (przydatne tylko, jako sposób na uniknięcie
+błędu DBI/RPostgres związanego z brakiem obsługi zagnieżdżonych transakcji)}
 }
 \value{
 id_testu utworzonego testu
