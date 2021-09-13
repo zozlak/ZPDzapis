@@ -12,6 +12,9 @@
 #' @param czescEgzaminuZapisz opcjonalnie nazwa części egzaminu, która zostanie
 #' przypisana nowej skali w kolumnie \code{czesz_egzaminu} tablicy \code{testy}
 #' (znajduje zastosowanie w odniesieniu do egzaminu gimnazjalnego)
+#' @param pominTransakcje wartość logiczna pozwalająca wywołać funkcję tak, aby nie używała
+#' transakcji - co do zasady nie należy stosować (przydatne tylko, jako sposób na uniknięcie
+#' błędu DBI/RPostgres związanego z brakiem obsługi zagnieżdżonych transakcji)
 #' @details
 #' Tworzony test posiada datę, jak najstarsza z data części egzaminu, z których powstał
 #' oraz \code{ewd} zgodne z testami, z których powstał.
@@ -35,7 +38,8 @@ stworz_test_z_wielu_czesci = function(
   rokEgzaminu,
   czyEwd,
   opis,
-  czescEgzaminuZapisz = NA
+  czescEgzaminuZapisz = NA,
+  pominTransakcje = FALSE
 ){
   stopifnot(
     is.character(rodzajEgzaminu)  , length(rodzajEgzaminu) == 1,
@@ -45,7 +49,9 @@ stworz_test_z_wielu_czesci = function(
     is.character(opis)            , length(opis) == 1,
     is.character(czescEgzaminuZapisz) | is.na(czescEgzaminuZapisz),
     length(czescEgzaminuZapisz) == 1,
-    opis[1] != ''
+    opis[1] != '',
+    is.logical(pominTransakcje)   , length(pominTransakcje) == 1,
+    pominTransakcje %in% c(TRUE, FALSE)
   )
 
   czyJest = .sqlQuery(P, "SELECT id_testu FROM testy WHERE opis = $1", opis)
@@ -68,7 +74,7 @@ stworz_test_z_wielu_czesci = function(
 
   stopifnot(nrow(testy) > 0)
 
-  DBI::dbBegin(P)
+  if (!pominTransakcje) DBI::dbBegin(P)
 
   # Pobierz testy składowe
   idTestu = as.integer(.sqlQuery(P, "SELECT nextval('testy_id_testu_seq')")[1, 1])
@@ -109,7 +115,7 @@ stworz_test_z_wielu_czesci = function(
   )
   .sqlQuery(P, zapytanie, c(idTestu, testy$id_testu))
 
-  DBI::dbCommit(P)
+  if (!pominTransakcje) DBI::dbCommit(P)
 
   return(idTestu)
 }

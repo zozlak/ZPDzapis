@@ -4,7 +4,7 @@
 \alias{stworz_skale}
 \title{Tworzy w bazie nowa skale i zwraca jej id_skali}
 \usage{
-stworz_skale(P, opis, rodzaj, doPrezentacji, idTestow)
+stworz_skale(P, opis, rodzaj, doPrezentacji, idTestow, pominTransakcje)
 }
 \arguments{
 \item{P}{połączenie z bazą danych uzyskane z \code{DBI::dbConnect(RPostgres::Postgres())}}
@@ -16,6 +16,10 @@ stworz_skale(P, opis, rodzaj, doPrezentacji, idTestow)
 \item{doPrezentacji}{czy skala ma być oznaczona jako przeznaczona do prezentacji}
 
 \item{idTestow}{wektor id testów, z którymi ma być powiązana skala}
+
+\item{pominTransakcje}{wartość logiczna pozwalająca wywołać funkcję tak, aby nie używała
+transakcji - co do zasady nie należy stosować (przydatne tylko, jako sposób na uniknięcie
+błędu DBI/RPostgres związanego z brakiem obsługi zagnieżdżonych transakcji)}
 }
 \value{
 [numeric] id_skali utworzonej skali

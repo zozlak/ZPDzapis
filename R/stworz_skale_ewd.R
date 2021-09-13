@@ -210,7 +210,8 @@ stworz_skale_ewd = function(
         idPseudtestu = stworz_test_z_wielu_czesci(
           P, rodzajEgzaminu, skale[[i]],
           rok, czyEwd, opisTestu,
-          testyMapa[testy[i]][[1]][2]
+          testyMapa[testy[i]][[1]][2],
+          pominTransakcje = TRUE
         )
       }
       # przyłączanie kryteriów do tego testu
@@ -232,7 +233,8 @@ stworz_skale_ewd = function(
       idTestow = c(idTestow, idPseudtestu)
     }
     # rejestrowanie skali
-    idSkal[i] = stworz_skale(P, names(skale)[i], "ewd", FALSE, idTestow)
+    idSkal[i] = stworz_skale(P, names(skale)[i], "ewd", FALSE, idTestow,
+                             pominTransakcje = TRUE)
     # przyłączanie kryteriów do skali
     kryteria = data.frame(
       kolejnosc = 1:nrow(kryteria),
