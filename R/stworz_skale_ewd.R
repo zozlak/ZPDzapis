@@ -35,7 +35,7 @@ stworz_skale_ewd = function(
             all(czyRasch %in% c(TRUE, FALSE))  , length(czyRasch) == 1,
             all(dopisz %in% c(TRUE, FALSE))    , length(dopisz) == 1
   )
-  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2021)
+  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2022)
   stopifnot(rodzajEgzaminu %in% c("sprawdzian", "egzamin gimnazjalny", "matura"))
 
   DBI::dbBegin(P)
