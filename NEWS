@@ -1,4 +1,14 @@
 --------------------
+Zmiany w ZPDzapis 0.6.0 (11.01.2023)
+
+Nowe funkcjonalności:
+- stworz_skale_ewd() potrafi tworzyć oddzielne skale dla poszczególnych
+  przedmiotów matury oraz łączonych z dwóch lat wyników egzaminu gimnazjalnego
+  dla danego typu szkoły, zgodnie z nowym podejściem do obliczania EWD
+  zaproponowanym przez Bartosza Kondratka;
+- zapisz_skalowanie() potrafi zapisywać do bazy kowariancje elementów skalowania.
+
+--------------------
 Zmiany w ZPDzapis 0.5.3 (29.09.2022)
 
 Uaktualnienia:

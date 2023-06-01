@@ -18,25 +18,39 @@
 #' @param dopisz wartość logiczna - czy jeśli istnieją już w bazie jakieś skale
 #' spośród tych, które ma utworzyć funkcja, to pominąć je i utworzyć pozostałe
 #' (zamiast nie zapisać nic i zwrócić błąd)?
+#' @param BK wartość logiczna - czy tworzyć oddzelne skale dla poszczególnych
+#' przedmiotów matury, zgodnie ze zmodyfikowanym podejściem do obliczania
+#' maryralnej EWD, zaproponowanym w 2022 r. przez Bartosza Kondratka?
+#' (może być \code{TRUE} tylko gdy \code{rodzaj_egzaminu="matura"})
+#' @details Uwaga, w przypadku skal wykorzystywanych do obliczania latentnych
+#' wskaźników EWD (tj. przy wywołaniu z argumentem \code{BK=TRUE})
+#' \strong{wywołanie funkcji z argumentem \code{rodzajEgzaminu="matura"} tworzy
+#' również skale dla egzaminu na wejściu}.
 #' @return wektor liczbowy zawierający id_skali utworzonych skal
 #' @export
 #' @importFrom stats setNames
 stworz_skale_ewd = function(
   P,
-  rodzajEgzaminu,
+  rodzajEgzaminu = c("sprawdzian", "egzamin gimnazjalny", "matura"),
   rok,
   sufiks = "",
   czyRasch = TRUE,
-  dopisz = FALSE
+  dopisz = FALSE,
+  BK = FALSE
 ) {
   stopifnot(is.character(rodzajEgzaminu)       , length(rodzajEgzaminu) == 1,
-            is.numeric(rok)                    , length(rok) > 0,
+            is.numeric(rok)                    , length(rok) == 1,
             is.character(sufiks)               , length(sufiks) == 1,
             all(czyRasch %in% c(TRUE, FALSE))  , length(czyRasch) == 1,
-            all(dopisz %in% c(TRUE, FALSE))    , length(dopisz) == 1
+            all(dopisz %in% c(TRUE, FALSE))    , length(dopisz) == 1,
+            all(BK %in% c(TRUE, FALSE))        , length(BK) == 1
   )
+  stopifnot(BK == FALSE || rodzajEgzaminu == "matura")
   stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2022)
-  stopifnot(rodzajEgzaminu %in% c("sprawdzian", "egzamin gimnazjalny", "matura"))
+  rodzajEgzaminu = match.arg(rodzajEgzaminu)
+  if (BK && czyRasch) {
+    warning("Argument `BK=TRUE`, więc argument `czyRasch=TRUE zostanie zignorowany (tj. nie zostaną utworzone skale raschowe).` ")
+  }
 
   DBI::dbBegin(P)
 
@@ -51,75 +65,133 @@ stworz_skale_ewd = function(
   } else if (rodzajEgzaminu == "egzamin gimnazjalny") {
     if (rok < 2012) {
       skale = list(
-        "ewd;gh" = c("humanistyczna"),
-        "ewd;gm" = c("matematyczno-przyrodnicza")
+        "ewd;gh" = list(czesci = "humanistyczna",
+                        lata = rok),
+        "ewd;gm" = list(czesci = "matematyczno-przyrodnicza",
+                        lata = rok)
       )
       if (czyRasch) {
         skale = append(skale, list(
-          "ewd;ghR" = c("humanistyczna"),
-          "ewd;gmR" = c("matematyczno-przyrodnicza"))
+          "ewd;ghR" = list(czesci = "humanistyczna",
+                           lata = rok),
+          "ewd;gmR" = list(czesci = "matematyczno-przyrodnicza",
+                           lata = rok))
         )
       }
-    } else {
+    } else if (!BK) {
       skale = list(
-        "ewd;gh"   = c("j. polski", "historia i WOS"),
-        "ewd;gh_h" = c("historia i WOS"),
-        "ewd;gh_p" = c("j. polski"),
-        "ewd;gm"   = c("matematyka", "przedmioty przyrodnicze"),
-        "ewd;gm_m" = c("matematyka"),
-        "ewd;gm_p" = c("przedmioty przyrodnicze")
+        "ewd;gh"   = list(czesci = c("j. polski", "historia i WOS"),
+                          lata = rok),
+        "ewd;gh_h" = list(czesci = c("historia i WOS"),
+                          lata = rok),
+        "ewd;gh_p" = list(czesci = c("j. polski"),
+                          lata = rok),
+        "ewd;gm"   = list(czesci = c("matematyka", "przedmioty przyrodnicze"),
+                          lata = rok),
+        "ewd;gm_m" = list(czesci = c("matematyka"),
+                          lata = rok),
+        "ewd;gm_p" = list(czesci = c("przedmioty przyrodnicze"),
+                          lata = rok)
       )
       if (czyRasch) {
         skale = append(skale, list(
-          "ewd;ghR"   = c("j. polski", "historia i WOS"),
-          "ewd;gh_hR" = c("historia i WOS"),
-          "ewd;gh_pR" = c("j. polski"),
-          "ewd;gmR"   = c("matematyka", "przedmioty przyrodnicze"),
-          "ewd;gm_mR" = c("matematyka"),
-          "ewd;gm_pR" = c("przedmioty przyrodnicze"))
+          "ewd;ghR"   = list(czesci = c("j. polski", "historia i WOS"),
+                             lata = rok),
+          "ewd;gh_hR" = list(czesci = c("historia i WOS"),
+                             lata = rok),
+          "ewd;gh_pR" = list(czesci = c("j. polski"),
+                             lata = rok),
+          "ewd;gmR"   = list(czesci = c("matematyka", "przedmioty przyrodnicze"),
+                             lata = rok),
+          "ewd;gm_mR" = list(czesci = c("matematyka"),
+                             lata = rok),
+          "ewd;gm_pR" = list(czesci = c("przedmioty przyrodnicze"),
+                             lata = rok))
         )
       }
     }
-  } else if (rodzajEgzaminu == "matura") {
+  } else if (rodzajEgzaminu == "matura" && !BK) {
     if (rok <= 2016) {
       skale = list(
-        "ewd;m_h"  = c("j. polski podstawowa", "j. polski rozszerzona",
-                       "historia podstawowa",  "historia rozszerzona",
-                       "WOS podstawowa",       "WOS rozszerzona"),
-        "ewd;m_jp" = c("j. polski podstawowa", "j. polski rozszerzona"),
-        "ewd;m_m"  = c("matematyka podstawowa", "matematyka rozszerzona"),
-        "ewd;m_mp" = c("matematyka podstawowa",  "matematyka rozszerzona",
-                       "biologia podstawowa",    "biologia rozszerzona",
-                       "chemia podstawowa",      "chemia rozszerzona",
-                       "fizyka podstawowa",      "fizyka rozszerzona",
-                       "geografia podstawowa",   "geografia rozszerzona",
-                       "informatyka podstawowa", "informatyka rozszerzona")
+        "ewd;m_h"  = list(czesci = c("j. polski podstawowa", "j. polski rozszerzona",
+                                     "historia podstawowa",  "historia rozszerzona",
+                                     "WOS podstawowa",       "WOS rozszerzona"),
+                          lata = rok),
+        "ewd;m_jp" = list(czesci = c("j. polski podstawowa", "j. polski rozszerzona"),
+                          lata = rok),
+        "ewd;m_m"  = list(czesci = c("matematyka podstawowa", "matematyka rozszerzona"),
+                          lata = rok),
+        "ewd;m_mp" = list(czesci = c("matematyka podstawowa",  "matematyka rozszerzona",
+                                     "biologia podstawowa",    "biologia rozszerzona",
+                                     "chemia podstawowa",      "chemia rozszerzona",
+                                     "fizyka podstawowa",      "fizyka rozszerzona",
+                                     "geografia podstawowa",   "geografia rozszerzona",
+                                     "informatyka podstawowa", "informatyka rozszerzona"),
+                          lata = rok)
       )
     } else {
       skale = list(
-        "ewd;m_h"  = c("j. polski podstawowa", "j. polski rozszerzona",
-                       "historia rozszerzona",
-                       "WOS rozszerzona"),
-        "ewd;m_jp" = c("j. polski podstawowa", "j. polski rozszerzona"),
-        "ewd;m_m"  = c("matematyka podstawowa", "matematyka rozszerzona"),
-        "ewd;m_mp" = c("matematyka podstawowa",  "matematyka rozszerzona",
-                       "biologia rozszerzona",
-                       "chemia rozszerzona",
-                       "fizyka rozszerzona",
-                       "geografia rozszerzona",
-                       "informatyka rozszerzona")
+        "ewd;m_h"  = list(czesci = c("j. polski podstawowa", "j. polski rozszerzona",
+                                     "historia rozszerzona",
+                                     "WOS rozszerzona"),
+                          lata = rok),
+        "ewd;m_jp" = list(czesci = c("j. polski podstawowa", "j. polski rozszerzona"),
+                          lata = rok),
+        "ewd;m_m"  = list(czesci = c("matematyka podstawowa", "matematyka rozszerzona"),
+                          lata = rok),
+        "ewd;m_mp" = list(czesci = c("matematyka podstawowa",  "matematyka rozszerzona",
+                                     "biologia rozszerzona",
+                                     "chemia rozszerzona",
+                                     "fizyka rozszerzona",
+                                     "geografia rozszerzona",
+                                     "informatyka rozszerzona"),
+                          lata = rok)
       )
     }
     if (czyRasch) {
       skale = append(skale, list(
-        "ewd;m_jpR" = c("j. polski podstawowa", "j. polski rozszerzona"),
-        "ewd;m_mR"  = c("matematyka podstawowa", "matematyka rozszerzona"))
+        "ewd;m_jpR" = list(czesci = c("j. polski podstawowa", "j. polski rozszerzona"),
+                           lata = rok),
+        "ewd;m_mR"  = list(czesci = c("matematyka podstawowa", "matematyka rozszerzona"),
+                           lata = rok))
       )
     }
+  } else if (rodzajEgzaminu == "matura" && BK) {
+    skale = list(
+      "ewd;m_jp" = list(czesci = c("j. polski podstawowa", "j. polski rozszerzona"),
+                        lata = rok),
+      "ewd;m_m"  = list(czesci = c("matematyka podstawowa", "matematyka rozszerzona"),
+                        lata = rok),
+      "ewd;m_b"  = list(czesci = "biologia rozszerzona",
+                        lata = rok),
+      "ewd;m_c"  = list(czesci = "chemia rozszerzona",
+                        lata = rok),
+      "ewd;m_f"  = list(czesci = "fizyka rozszerzona",
+                        lata = rok),
+      "ewd;m_g"  = list(czesci = "geografia rozszerzona",
+                        lata = rok),
+      "ewd;m_h"  = list(czesci = "historia rozszerzona",
+                        lata = rok),
+      "ewd;m_i"  = list(czesci = "informatyka rozszerzona",
+                        lata = rok),
+      "ewd;m_w"  = list(czesci = "WOS rozszerzona",
+                        lata = rok),
+      "ewd;ghLO" = list(czesci = c("j. polski", "historia i WOS"),
+                        lata = (rok - 3L):(rok - 4L)),
+      "ewd;ghT"  = list(czesci = c("j. polski", "historia i WOS"),
+                        lata = (rok - 4L):(rok - 5L)),
+      "ewd;gmLO" = list(czesci = c("matematyka", "przedmioty przyrodnicze"),
+                        lata = (rok - 3L):(rok - 4L)),
+      "ewd;gmT"  = list(czesci = c("matematyka", "przedmioty przyrodnicze"),
+                        lata = (rok - 4L):(rok - 5L))
+    )
   }
   testy = sub("R$", "", sub("^ewd;", "", names(skale)))
   maskaNieRasch = !grepl("R$", names(skale))
-  names(skale) = paste0(names(skale), ";", rok)
+  names(skale) = paste0(names(skale), ";",
+                        sapply(skale,
+                               function(x) {
+                                 return(paste(x$lata, collapse = ""))}))
   if (sufiks != "") {
     names(skale)[maskaNieRasch] =
       paste0(names(skale)[maskaNieRasch], ";", sub("^;","", sufiks))
@@ -128,10 +200,21 @@ stworz_skale_ewd = function(
   testyMapa = list(
     "gh"   = c("humanistyczna", "humanistyczna"),
     "gm"   = c("matematyczno-przyrodnicza", "matematyczno-przyrodnicza"),
+    "ghLO" = c("humanistyczna", "humanistyczna"),
+    "ghT"  = c("humanistyczna", "humanistyczna"),
+    "gmLO" = c("matematyczno-przyrodnicza", "matematyczno-przyrodnicza"),
+    "gmT"  = c("matematyczno-przyrodnicza", "matematyczno-przyrodnicza"),
     "m_h"  = c("humanistyczna", NA),
     "m_jp" = c("polski", NA),
     "m_m"  = c("matematyka", NA),
-    "m_mp" = c("matematyczno-przyrodnicza", NA)
+    "m_mp" = c("matematyczno-przyrodnicza", NA),
+    "m_b"  = c("biologia", NA),
+    "m_c"  = c("chemia", NA),
+    "m_f"  = c("fizyka", NA),
+    "m_g"  = c("geografia", NA),
+    "m_h"  = c("historia", NA),
+    "m_i"  = c("informatyka", NA),
+    "m_w"  = c("WOS", NA)
   )
   if (!all(testy[unlist(lapply(skale, length)) > 1] %in% names(testyMapa))) {
     stop("Niektórych opisów skal nie udało się zmapować na opisy testów. Popraw kod funkcji.")
@@ -162,13 +245,25 @@ stworz_skale_ewd = function(
   } else {
     czyEwd = TRUE
   }
-
+  # przerabianie elementów `skale` na ramki danych
+  skale = mapply(
+    function(x, rodzajEgzaminu) {
+      return(data.frame(rodzaj_egzaminu = rodzajEgzaminu,
+                        expand.grid(czesc_egzaminu = x$czesci,
+                                    rok = x$lata,
+                                    stringsAsFactors = FALSE)))
+    },
+    skale,
+    c("s" = "sprawdzian",
+      "g" = "egzamin gimnazjalny",
+      "m" = "matura")[substr(testy, 1, 1)],
+    SIMPLIFY = FALSE)
   # ruszamy do pracy
   idSkal = setNames(rep(NA, length(skale)), names(skale))
   for (i in 1:length(skale)) {
     # wyszukiwanie id_testów
     message("Tworzenie skali '", names(skale)[i], "'.")
-    idTestow = vector(mode = "list", length = length(skale[[i]]))
+    idTestow = vector(mode = "list", length = nrow(skale[[i]]))
     for (j in 1:length(idTestow)) {
       idTestow[[j]] = .sqlQuery(
         P,
@@ -180,7 +275,8 @@ stworz_skale_ewd = function(
             AND EXTRACT(YEAR FROM data_egzaminu) = $3
             AND ewd = $4
         ",
-        list(rodzajEgzaminu, skale[[i]][j], rok, czyEwd)
+        list(skale[[i]]$rodzaj_egzaminu[j], skale[[i]]$czesc_egzaminu[j],
+             skale[[i]]$rok[j], czyEwd)
       )
       if (nrow(idTestow[[j]]) == 0) {
         stop("Nie udało się znaleźć testów z wynikami egzaminu '", rodzajEgzaminu,
@@ -198,39 +294,43 @@ stworz_skale_ewd = function(
     kryteria = .sqlQuery(P, zapytanie, idTestow)
     kryteria = kryteria[!duplicated(kryteria$id_kryterium), ]
     # ewentualne tworzenie nowego testu (jeśli skala obejmuje wiele części egzaminu)
-    if (length(skale[[i]]) > 1) {
-      opisTestu = paste(rodzajEgzaminu, testyMapa[testy[i]][[1]][1], rok, sep = ";")
-      idPseudtestu = .sqlQuery(
-        P,
-        "SELECT id_testu FROM testy WHERE opis = $1",
-        opisTestu
-      )[, 1]
-      if (length(idPseudtestu) == 0) {
-        message(" Tworzenie nowego testu: '", opisTestu, "' (może chwilę potrwać...).")
-        idPseudtestu = stworz_test_z_wielu_czesci(
-          P, rodzajEgzaminu, skale[[i]],
-          rok, czyEwd, opisTestu,
-          testyMapa[testy[i]][[1]][2],
-          pominTransakcje = TRUE
-        )
-      }
-      # przyłączanie kryteriów do tego testu
-      wBazie = .sqlQuery(
-        P,
-        "SELECT count(id_kryterium) FROM testy_kryteria WHERE id_testu = $1",
-        idPseudtestu
-      )[1, 1]
-      if (wBazie == 0) {
-        message(" Wypełnianie tablicy 'testy_kryteria' dla testu '", opisTestu, "'.")
-        kryteria$id_testu = idPseudtestu
-        kryteria = cbind(kryteria, popr_dystraktor = NA)
-        .sqlQuery(
+    if (nrow(skale[[i]]) > 1) {
+      rodzajEgzaminuSkala = unique(skale[[i]]$rodzaj_egzaminu)
+      lata = sort(unique(skale[[i]]$rok), decreasing = TRUE)
+      opisyTestow = paste(rodzajEgzaminuSkala, testyMapa[testy[i]][[1]][1],
+                          lata, sep = ";")
+      for (j in 1:length(opisyTestow)) {
+        idPseudtestu = .sqlQuery(
           P,
-          "INSERT INTO testy_kryteria (id_testu, id_kryterium,kolejnosc, popr_dystraktor) VALUES ($1, $2, $3, $4)",
-          kryteria
-        )
+          "SELECT id_testu FROM testy WHERE opis = $1",
+          opisyTestow[j]
+        )[, 1]
+        if (length(idPseudtestu) == 0) {
+          message(" Tworzenie nowego testu: '", opisyTestow[j], "' (może chwilę potrwać...).")
+          idPseudtestu = stworz_test_z_wielu_czesci(
+            P, rodzajEgzaminuSkala, skale[[i]]$czesci, lata[j], czyEwd,
+            opisyTestow[j], testyMapa[testy[i]][[1]][2],
+            pominTransakcje = TRUE
+          )
+        }
+        # przyłączanie kryteriów do tego testu
+        wBazie = .sqlQuery(
+          P,
+          "SELECT count(id_kryterium) FROM testy_kryteria WHERE id_testu = $1",
+          idPseudtestu
+        )[1, 1]
+        if (wBazie == 0) {
+          message(" Wypełnianie tablicy 'testy_kryteria' dla testu '", opisyTestow[j], "'.")
+          kryteria$id_testu = idPseudtestu
+          kryteria = cbind(kryteria, popr_dystraktor = NA)
+          .sqlQuery(
+            P,
+            "INSERT INTO testy_kryteria (id_testu, id_kryterium,kolejnosc, popr_dystraktor) VALUES ($1, $2, $3, $4)",
+            kryteria
+          )
+        }
+        idTestow = c(idTestow, idPseudtestu)
       }
-      idTestow = c(idTestow, idPseudtestu)
     }
     # rejestrowanie skali
     idSkal[i] = stworz_skale(P, names(skale)[i], "ewd", FALSE, idTestow,

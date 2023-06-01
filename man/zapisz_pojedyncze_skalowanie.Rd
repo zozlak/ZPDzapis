@@ -52,7 +52,7 @@ zapisane dane skalowanie, funkcja najpierw sprawdzi, czy dane przekazywane do
 zapisania, które odnoszą się do tabeli \code{skalowania_grupy} są dokładnie
 takie same, jak dane już zapisane w bazie. Jeśli tak, spróbuje dopisać dane
 odnoszące się do tablic \code{skalowania_elementy},
-\code{skalowania_obserwcje}, i \code{normy} do danych już istniejących w
+\code{skalowania_obserwacje}, i \code{normy} do danych już istniejących w
 bazie. Jeśli napotka przy tym jakieś konflikty, zaniecha zapisu jakichkolwiek
 danych.
 

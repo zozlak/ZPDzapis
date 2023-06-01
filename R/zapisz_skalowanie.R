@@ -94,7 +94,7 @@ zapisz_skalowanie = function(
 #' zapisania, które odnoszą się do tabeli \code{skalowania_grupy} są dokładnie
 #' takie same, jak dane już zapisane w bazie. Jeśli tak, spróbuje dopisać dane
 #' odnoszące się do tablic \code{skalowania_elementy},
-#' \code{skalowania_obserwcje}, i \code{normy} do danych już istniejących w
+#' \code{skalowania_obserwacje}, i \code{normy} do danych już istniejących w
 #' bazie. Jeśli napotka przy tym jakieś konflikty, zaniecha zapisu jakichkolwiek
 #' danych.
 #'
@@ -144,7 +144,8 @@ zapisz_pojedyncze_skalowanie = function(
   # sprawdzanie, czy we wszystkich elementach mamy to samo skalowanie
   message("  Kontrola poprawności argumentów.")
   for (i in 1:length(x)) {
-    if (names(x)[i] %in% c("usunieteKryteria", "odsUtraconejWariancji") |
+    if (names(x)[i] %in% c("usunieteKryteria", "odsUtraconejWariancji",
+                           "skalowania_elementy_kowariancje") |
         is.null(x[[i]])) {
       next
     }
@@ -163,9 +164,12 @@ zapisz_pojedyncze_skalowanie = function(
     skalowania_elementy =
       .sqlQuery(P, "SELECT kolejnosc, parametr, uwagi, grupa FROM skalowania_elementy WHERE id_skali = $1 AND skalowanie = $2",
                  list(idSkali, skalowanie)),
+    skalowania_elementy_kowariancje =
+      .sqlQuery(P, "SELECT id_elementu1, id_elementu2, kowariancja FROM skalowania_elementy_kowariancje WHERE id_elementu1 IN (SELECT id_elementu FROM skalowania_elementy WHERE id_skali = $1 AND skalowanie = $2) OR id_elementu2 IN (SELECT id_elementu FROM skalowania_elementy WHERE id_skali = $1 AND skalowanie = $2)",
+                list(idSkali, skalowanie)),
     skalowania_obserwacje =
       .sqlQuery(P, "SELECT id_obserwacji FROM skalowania_obserwacje WHERE id_skali = $1 AND skalowanie = $2",
-                 list(idSkali, skalowanie)),
+                list(idSkali, skalowanie)),
     normy =
       .sqlQuery(P, "SELECT grupa, wartosc FROM normy WHERE id_skali = $1 AND skalowanie = $2",
                  list(idSkali, skalowanie))
@@ -193,6 +197,9 @@ zapisz_pojedyncze_skalowanie = function(
     kasowanie = list(
       skalowania_obserwacje =
         .sqlQuery(P, "DELETE FROM skalowania_obserwacje WHERE id_skali = $1 AND skalowanie = $2",
+                   list(idSkali, skalowanie)),
+      skalowania_elementy_kowariancje =
+        .sqlQuery(P, "DELETE FROM skalowania_elementy_kowariancje WHERE id_elementu1 IN (SELECT id_elementu FROM skalowania_elementy WHERE id_skali = $1 AND skalowanie = $2) OR id_elementu2 IN (SELECT id_elementu FROM skalowania_elementy WHERE id_skali = $1 AND skalowanie = $2)",
                    list(idSkali, skalowanie)),
       skalowania_elementy =
         .sqlQuery(P, "DELETE FROM skalowania_elementy WHERE id_skali = $1 AND skalowanie = $2",
@@ -243,6 +250,17 @@ zapisz_pojedyncze_skalowanie = function(
              "które są już zapisane w bazie.")
       }
       x$skalowania_elementy = NULL
+    }
+    # skalowania_elementy_kowariancje
+    if ("skalowania_elementy" %in% wspolne) {
+      temp = merge(baza$skalowania_elementy_kowariancje,
+                   x$skalowania_elementy_kowariancje)
+      if (nrow(temp) != nrow(baza$skalowania_elementy_kowariancje) |
+          nrow(temp) != nrow(x$skalowania_elementy_kowariancje)) {
+        stop("W elemencie 'skalowania_elementy_kowariancje' wykryto konflikty z danymi, ",
+             "które są już zapisane w bazie.")
+      }
+      x$skalowania_elementy_kowariancje = NULL
     }
     # normy
     if ("normy" %in% wspolne) {
@@ -323,9 +341,54 @@ zapisz_pojedyncze_skalowanie = function(
 
     x$skalowania_elementy$grupowy[x$skalowania_elementy$grupowy %in% FALSE] = NA
     x$skalowania_elementy$parametr[x$skalowania_elementy$parametr %in% "dyskryminacja"] = "a"
-    w = .sqlQuery(P, uloz_insert_z_ramki("skalowania_elementy", x$skalowania_elementy),
-                 x$skalowania_elementy)
+    if (is.data.frame(x$skalowania_elementy_kowariancje)) {
+      maska = setdiff(names(x$skalowania_elementy),
+                      names(x$skalowania_elementy_kowariancje))
+    } else {
+      maska = names(x$skalowania_elementy)
+    }
+    w = .sqlQuery(P, uloz_insert_z_ramki("skalowania_elementy", x$skalowania_elementy[, maska]),
+                 x$skalowania_elementy[, maska])
     message("   Zapisano wartości ", nrow(x$skalowania_elementy), " parametrów.")
+  }
+
+  # zapis kowariancji parametrów modelu
+  if (is.data.frame(x$skalowania_elementy_kowariancje)) {
+    message("  Zapis wartości kowariancji parametrów modelu.")
+    klucz = intersect(names(x$skalowania_elementy),
+                      names(x$skalowania_elementy_kowariancje))
+    klucz2 = intersect(paste0(klucz, "2"),
+                       names(x$skalowania_elementy_kowariancje))
+    if (length(klucz) > 0 && length(klucz) == length(klucz2)) {
+      idElementow = idElementow2 = x$skalowania_elementy[, c("id_elementu", klucz)]
+      names(idElementow2) = paste0(names(idElementow), "2")
+
+      nSEK = nrow(x$skalowania_elementy_kowariancje)
+      x$skalowania_elementy_kowariancje =
+        merge(x$skalowania_elementy_kowariancje,
+              idElementow,
+              by = klucz, all = FALSE)
+      names(x$skalowania_elementy_kowariancje) =
+        sub("^id_elementu$", "id_elementu1",
+            names(x$skalowania_elementy_kowariancje))
+      x$skalowania_elementy_kowariancje =
+        merge(x$skalowania_elementy_kowariancje,
+              idElementow2,
+              by = klucz2, all = FALSE)
+      x$skalowania_elementy_kowariancje =
+        x$skalowania_elementy_kowariancje[, c("id_elementu1", "id_elementu2",
+                                              "kowariancja")]
+    } else {
+      nSEK = -1L
+    }
+    if (nrow(x$skalowania_elementy_kowariancje) == nSEK) {
+      w = .sqlQuery(P, uloz_insert_z_ramki("skalowania_elementy_kowariancje",
+                                           x$skalowania_elementy_kowariancje),
+                    x$skalowania_elementy_kowariancje)
+      message("   Zapisano wartości ", nrow(x$skalowania_elementy_kowariancje), " kowariancji parametrów.")
+    } else {
+      warning("Zapis wartości kowariancji parametrów modelu był niemożliwy ze względu na problemy z mapowanie elementów skali.")
+    }
   }
 
   # zapis norm
