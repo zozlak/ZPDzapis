@@ -1,4 +1,14 @@
 --------------------
+Zmiany w ZPDzapis 0.7.0 (28.10.2023)
+
+Uaktualnienia:
+- objęto działaniem funkcji stworz_skale_ewd() rok 2023:
+  - oddzielne skale (i, jeśli to konieczne, pseudotesty) tworzone są dla
+    starszej i dla nowszej formuły matury - pierwsze tylko przy wywołaniu
+    z parametrem BK = FALSE, a drugie tylko przy BK = TRUE;
+- domyślną wartość parametry czyRasch w stworz_skale_ewd() zmieniono na FALSE.
+
+--------------------
 Zmiany w ZPDzapis 0.6.0 (11.01.2023)
 
 Nowe funkcjonalności:

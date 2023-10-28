@@ -29,24 +29,26 @@
 #' @return wektor liczbowy zawierający id_skali utworzonych skal
 #' @export
 #' @importFrom stats setNames
+#' @importFrom dplyr  %>% .data filter select
 stworz_skale_ewd = function(
   P,
-  rodzajEgzaminu = c("sprawdzian", "egzamin gimnazjalny", "matura"),
+  rodzajEgzaminu = c("sprawdzian", "egzamin gimnazjalny", "matura",
+                     "egzamin ósmoklasisty"),
   rok,
   sufiks = "",
-  czyRasch = TRUE,
+  czyRasch = FALSE,
   dopisz = FALSE,
   BK = FALSE
 ) {
-  stopifnot(is.character(rodzajEgzaminu)       , length(rodzajEgzaminu) == 1,
-            is.numeric(rok)                    , length(rok) == 1,
-            is.character(sufiks)               , length(sufiks) == 1,
-            all(czyRasch %in% c(TRUE, FALSE))  , length(czyRasch) == 1,
-            all(dopisz %in% c(TRUE, FALSE))    , length(dopisz) == 1,
-            all(BK %in% c(TRUE, FALSE))        , length(BK) == 1
+  stopifnot(is.character(rodzajEgzaminu)     , length(rodzajEgzaminu) == 1,
+            is.numeric(rok)                  , length(rok) == 1,
+            is.character(sufiks)             , length(sufiks) == 1,
+            all(czyRasch %in% c(TRUE, FALSE)), length(czyRasch) == 1,
+            all(dopisz %in% c(TRUE, FALSE))  , length(dopisz) == 1,
+            all(BK %in% c(TRUE, FALSE))      , length(BK) == 1
   )
   stopifnot(BK == FALSE || rodzajEgzaminu == "matura")
-  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2022)
+  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2023)
   rodzajEgzaminu = match.arg(rodzajEgzaminu)
   if (BK && czyRasch) {
     warning("Argument `BK=TRUE`, więc argument `czyRasch=TRUE zostanie zignorowany (tj. nie zostaną utworzone skale raschowe).` ")
@@ -176,15 +178,94 @@ stworz_skale_ewd = function(
                         lata = rok),
       "ewd;m_w"  = list(czesci = "WOS rozszerzona",
                         lata = rok),
-      "ewd;ghLO" = list(czesci = c("j. polski", "historia i WOS"),
-                        lata = (rok - 3L):(rok - 4L)),
-      "ewd;ghT"  = list(czesci = c("j. polski", "historia i WOS"),
-                        lata = (rok - 4L):(rok - 5L)),
-      "ewd;gmLO" = list(czesci = c("matematyka", "przedmioty przyrodnicze"),
-                        lata = (rok - 3L):(rok - 4L)),
-      "ewd;gmT"  = list(czesci = c("matematyka", "przedmioty przyrodnicze"),
-                        lata = (rok - 4L):(rok - 5L))
+      "ewd;m_ja" = list(czesci = c("j. angielski podstawowa", "j. angielski rozszerzona"),
+                        lata = rok)
     )
+    if (rok <= 2022) {
+      skale = append(
+        skale,
+        list(
+          "ewd;ghLO" = list(czesci = c("j. polski", "historia i WOS"),
+                            lata = (rok - 3L):(rok - 4L)),
+          "ewd;gmLO" = list(czesci = c("matematyka", "przedmioty przyrodnicze"),
+                            lata = (rok - 3L):(rok - 4L)),
+          "ewd;gjaLO" = list(czesci = "j. angielski rozszerzona",
+                             lata = (rok - 3L):(rok - 4L))
+        ))
+    } else if (rok == 2023) {
+      skale = append(
+        skale,
+        list(
+          "ewd;e8jpLO" = list(czesci = "j. polski",
+                              lata = rok - 4L),
+          "ewd;e8mLO" = list(czesci = "matematyka",
+                             lata = rok - 4L),
+          "ewd;e8jaLO" = list(czesci = "j. angielski",
+                              lata = rok - 4L)
+        ))
+    } else {
+      skale = append(
+        skale,
+        list(
+          "ewd;e8jpLO" = list(czesci = "j. polski",
+                              lata = (rok - 4L):(rok - 5L)),
+          "ewd;e8mLO" = list(czesci = "matematyka",
+                             lata = (rok - 4L):(rok - 5L)),
+          "ewd;e8jaLO" = list(czesci = "j. angielski",
+                              lata = (rok - 4L):(rok - 5L))
+        ))
+    }
+    if (rok <= 2023) {
+      skale = append(
+        skale,
+        list(
+          "ewd;ghT"  = list(czesci = c("j. polski", "historia i WOS"),
+                            lata = (rok - 4L):(rok - 5L)),
+          "ewd;gmT"  = list(czesci = c("matematyka", "przedmioty przyrodnicze"),
+                            lata = (rok - 4L):(rok - 5L))
+        ))
+    } else if (rok == 2024) {
+      skale = append(
+        skale,
+        list(
+          "ewd;e8jpT" = list(czesci = "j. polski",
+                             lata = rok - 5L),
+          "ewd;e8mT" = list(czesci = "matematyka",
+                            lata = rok - 5L),
+          "ewd;e8jaT" = list(czesci = "j. angielski",
+                             lata = rok - 5L)
+        ))
+    } else {
+      skale = append(
+        skale,
+        list(
+          "ewd;e8jpT" = list(czesci = "j. polski",
+                             lata = (rok - 5L):(rok - 6L)),
+          "ewd;e8mT" = list(czesci = "matematyka",
+                            lata = (rok - 5L):(rok - 6L)),
+          "ewd;e8jaT" = list(czesci = "j. angielski",
+                             lata = (rok - 5L):(rok - 6L))
+        ))
+    }
+  }
+  # Obsługa faktu, że dla 2023 r. skale zgodnie ze "starym" schematem tworzone
+  # są tylko dla starszej formuły matury (zdawanej w technikach), a skale
+  # zgodnie ze schematem "BK" są tworzone tylko dla nowszej formuły matury
+  # (zdawanej w LO)
+  skale = lapply(skale, append, list(maskaArkusz = ""))
+  if (rok == 2023 && rodzajEgzaminu == "matura") {
+    if (!BK) {
+      skale = lapply(skale,
+                     function(x) {
+                       x$maskaArkusz = "^E"
+                       return(x)})
+    } else {
+      skale[grep("^ewd;m_", names(skale))] =
+        lapply(skale[grep("^ewd;m_", names(skale))],
+               function(x) {
+                 x$maskaArkusz = "^M"
+                 return(x)})
+    }
   }
   testy = sub("R$", "", sub("^ewd;", "", names(skale)))
   maskaNieRasch = !grepl("R$", names(skale))
@@ -197,25 +278,38 @@ stworz_skale_ewd = function(
       paste0(names(skale)[maskaNieRasch], ";", sub("^;","", sufiks))
   }
   # mapowanie opisów skal na opisy testów
+  # (muszą tu zostać podane tylko te skale, które składają się z kilku testów,
+  #  w związku z czym konieczne jest utworzenie dla nich pseudotestu)
   testyMapa = list(
+    #        c("opis testu", "opis pseudotestu")
     "gh"   = c("humanistyczna", "humanistyczna"),
     "gm"   = c("matematyczno-przyrodnicza", "matematyczno-przyrodnicza"),
     "ghLO" = c("humanistyczna", "humanistyczna"),
     "ghT"  = c("humanistyczna", "humanistyczna"),
     "gmLO" = c("matematyczno-przyrodnicza", "matematyczno-przyrodnicza"),
     "gmT"  = c("matematyczno-przyrodnicza", "matematyczno-przyrodnicza"),
-    "m_h"  = c("humanistyczna", NA),
-    "m_jp" = c("polski", NA),
-    "m_m"  = c("matematyka", NA),
-    "m_mp" = c("matematyczno-przyrodnicza", NA),
-    "m_b"  = c("biologia", NA),
-    "m_c"  = c("chemia", NA),
-    "m_f"  = c("fizyka", NA),
-    "m_g"  = c("geografia", NA),
-    "m_h"  = c("historia", NA),
-    "m_i"  = c("informatyka", NA),
-    "m_w"  = c("WOS", NA)
+    "m_h"  = c("humanistyczna", NA_character_),
+    "m_jp" = c("polski", NA_character_),
+    "m_m"  = c("matematyka", NA_character_),
+    "m_mp" = c("matematyczno-przyrodnicza", NA_character_),
+    "m_b"  = c("biologia", NA_character_),
+    "m_c"  = c("chemia", NA_character_),
+    "m_f"  = c("fizyka", NA_character_),
+    "m_g"  = c("geografia", NA_character_),
+    "m_h"  = c("historia", NA_character_),
+    "m_i"  = c("informatyka", NA_character_),
+    "m_w"  = c("WOS", NA_character_),
+    "m_ja"  = c("angielski", NA_character_)
   )
+  # Obsługa faktu, że dla 2023 r. skale zgodnie ze "starym" schematem tworzone
+  # są tylko dla starszej formuły matury (zdawanej w technikach), a skale
+  # zgodnie ze schematem "BK" są tworzone tylko dla nowszej formuły matury
+  # (zdawanej w LO)
+  if (rok == 2023) {
+    testyMapa[grep("^m_", names(testyMapa))] =
+      lapply(testyMapa[grep("^m_", names(testyMapa))],
+             function(x) ifelse(is.na(x), x, paste0(x, ifelse(BK, "NF", "SF"))))
+  }
   if (!all(testy[unlist(lapply(skale, length)) > 1] %in% names(testyMapa))) {
     stop("Niektórych opisów skal nie udało się zmapować na opisy testów. Popraw kod funkcji.")
   }
@@ -251,23 +345,26 @@ stworz_skale_ewd = function(
       return(data.frame(rodzaj_egzaminu = rodzajEgzaminu,
                         expand.grid(czesc_egzaminu = x$czesci,
                                     rok = x$lata,
-                                    stringsAsFactors = FALSE)))
+                                    stringsAsFactors = FALSE),
+                        maskaArkusz = x$maskaArkusz))
     },
     skale,
     c("s" = "sprawdzian",
       "g" = "egzamin gimnazjalny",
-      "m" = "matura")[substr(testy, 1, 1)],
+      "m" = "matura",
+      "e" = "egzamin ósmoklasisty")[substr(testy, 1, 1)],
     SIMPLIFY = FALSE)
+  stopifnot(!any(sapply(skale, function(x) any(is.na(x$rodzaj_egaminu)))))
   # ruszamy do pracy
   idSkal = setNames(rep(NA, length(skale)), names(skale))
-  for (i in 1:length(skale)) {
+  for (i in seq_along(skale)) {
     # wyszukiwanie id_testów
     message("Tworzenie skali '", names(skale)[i], "'.")
     idTestow = vector(mode = "list", length = nrow(skale[[i]]))
-    for (j in 1:length(idTestow)) {
+    for (j in seq_along(idTestow)) {
       idTestow[[j]] = .sqlQuery(
         P,
-        "SELECT id_testu
+        "SELECT id_testu, arkusz
           FROM arkusze JOIN testy USING (arkusz)
           WHERE
             arkusze.rodzaj_egzaminu = $1
@@ -277,7 +374,9 @@ stworz_skale_ewd = function(
         ",
         list(skale[[i]]$rodzaj_egzaminu[j], skale[[i]]$czesc_egzaminu[j],
              skale[[i]]$rok[j], czyEwd)
-      )
+      ) %>%
+        filter(grepl(skale[[i]]$maskaArkusz[1], .data$arkusz)) %>%
+        select("id_testu")
       if (nrow(idTestow[[j]]) == 0) {
         stop("Nie udało się znaleźć testów z wynikami egzaminu '", rodzajEgzaminu,
              "', w roku ", rok, " ze źródła ewd=", czyEwd, ".")
@@ -299,7 +398,7 @@ stworz_skale_ewd = function(
       lata = sort(unique(skale[[i]]$rok), decreasing = TRUE)
       opisyTestow = paste(rodzajEgzaminuSkala, testyMapa[testy[i]][[1]][1],
                           lata, sep = ";")
-      for (j in 1:length(opisyTestow)) {
+      for (j in seq_along(opisyTestow)) {
         idPseudtestu = .sqlQuery(
           P,
           "SELECT id_testu FROM testy WHERE opis = $1",
@@ -308,7 +407,7 @@ stworz_skale_ewd = function(
         if (length(idPseudtestu) == 0) {
           message(" Tworzenie nowego testu: '", opisyTestow[j], "' (może chwilę potrwać...).")
           idPseudtestu = stworz_test_z_wielu_czesci(
-            P, rodzajEgzaminuSkala, skale[[i]]$czesci, lata[j], czyEwd,
+            P, rodzajEgzaminuSkala, skale[[i]]$czesc_egzaminu, lata[j], czyEwd,
             opisyTestow[j], testyMapa[testy[i]][[1]][2],
             pominTransakcje = TRUE
           )
@@ -337,7 +436,7 @@ stworz_skale_ewd = function(
                              pominTransakcje = TRUE)
     # przyłączanie kryteriów do skali
     kryteria = data.frame(
-      kolejnosc = 1:nrow(kryteria),
+      kolejnosc = seq_len(nrow(kryteria)),
       id_skali = unname(idSkal[i]),
       kryteria$id_kryterium
     )

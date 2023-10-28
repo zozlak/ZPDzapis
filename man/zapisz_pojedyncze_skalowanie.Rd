@@ -60,8 +60,11 @@ Oszacowania umiejętności domyślnie (\code{oszacowaniaDoCopy = TRUE}) nie są
 wczytywane do bazy, gdyż trwałoby to koszmarnie długo (po 4-6 h na część
 egzaminu). Zamiast tego zapisywany jest na dysku skompresowany (w formacie
 zip) plik csv (w formacie zgodnym z wynikiem działania
-\code{\link{write.csv}}), który należy przenieść na Odrę i stamtąd wczytać go
-do bazy komendą \code{COPY} programu \code{psql}.
+\code{\link{write.csv}}), który należy przenieść na komputer, na którym ma
+się otwarte połączenie z bazą przy pomocy programu \code{psql} (może być
+on otwarty również spod PgAdmina!) i tam rozpakować, a następnie wczytać do
+bazy wywołując w \code{psql} polecenie
+\code{\copy skalowania_obserwacje FROM 'ścieżka-do-pliku' WITH DELIMITER ',' CSV HEADER NULL AS 'null';}.
 
 Uwaga! Jeśli \code{oszacowaniaDoCopy = TRUE} i \code{nadpisz = TRUE}, to w
 ramach wywołania funkcji usunięte zostaną dotychczasowe wartości tablicy

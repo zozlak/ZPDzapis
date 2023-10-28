@@ -1,6 +1,6 @@
 Package: ZPDzapis
 Title: Funkcje zapisu danych do bazy ZPD
-Version: 0.6.0
+Version: 0.7.0
 Authors@R: c(
   person("Mateusz", "Zoltak", , "zozlak@zozlak.org", role = c("aut", "cre")),
   person("Grzegorz", "Golonka", , "ggolonka@o2.pl", role = c("aut")),
@@ -8,9 +8,9 @@ Authors@R: c(
 Description: Funkcje zapisu danych do bazy ZPD.
 Imports:
     dplyr,
-    DBI,
-    RPostgres
+    DBI
 Suggests:
+    RPostgres,
     knitr,
     testthat
 License: MIT + file LICENSE

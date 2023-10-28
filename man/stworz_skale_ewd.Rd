@@ -6,10 +6,11 @@
 \usage{
 stworz_skale_ewd(
   P,
-  rodzajEgzaminu = c("sprawdzian", "egzamin gimnazjalny", "matura"),
+  rodzajEgzaminu = c("sprawdzian", "egzamin gimnazjalny", "matura",
+    "egzamin ósmoklasisty"),
   rok,
   sufiks = "",
-  czyRasch = TRUE,
+  czyRasch = FALSE,
   dopisz = FALSE,
   BK = FALSE
 )
