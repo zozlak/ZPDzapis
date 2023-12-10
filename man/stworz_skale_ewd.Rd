@@ -6,11 +6,13 @@
 \usage{
 stworz_skale_ewd(
   P,
-  rodzajEgzaminu,
+  rodzajEgzaminu = c("sprawdzian", "egzamin gimnazjalny", "matura",
+    "egzamin ósmoklasisty"),
   rok,
   sufiks = "",
-  czyRasch = TRUE,
-  dopisz = FALSE
+  czyRasch = FALSE,
+  dopisz = FALSE,
+  BK = FALSE
 )
 }
 \arguments{
@@ -29,6 +31,11 @@ Kalkulatora EWD?}
 \item{dopisz}{wartość logiczna - czy jeśli istnieją już w bazie jakieś skale
 spośród tych, które ma utworzyć funkcja, to pominąć je i utworzyć pozostałe
 (zamiast nie zapisać nic i zwrócić błąd)?}
+
+\item{BK}{wartość logiczna - czy tworzyć oddzelne skale dla poszczególnych
+przedmiotów matury, zgodnie ze zmodyfikowanym podejściem do obliczania
+maryralnej EWD, zaproponowanym w 2022 r. przez Bartosza Kondratka?
+(może być \code{TRUE} tylko gdy \code{rodzaj_egzaminu="matura"})}
 }
 \value{
 wektor liczbowy zawierający id_skali utworzonych skal
@@ -42,4 +49,10 @@ które obejmują kilka części egzaminu.
 
 Uwaga, skale tworzone są z flagą \code{do_prezentacji} ustawioną na
 \code{FALSE}.
+}
+\details{
+Uwaga, w przypadku skal wykorzystywanych do obliczania latentnych
+wskaźników EWD (tj. przy wywołaniu z argumentem \code{BK=TRUE})
+\strong{wywołanie funkcji z argumentem \code{rodzajEgzaminu="matura"} tworzy
+również skale dla egzaminu na wejściu}.
 }

@@ -81,7 +81,7 @@ zapisz_wskazniki_ewd = function(
     message(" Przygotowywanie danych do wczytania.",
             format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
     wartosci_wskaznikow = data.frame()
-    for (i in 1:length(x)) {
+    for (i in seq_along(x)) {
       x[[i]] = cbind(id_ww = NA, rodzaj_wsk = "ewd",
                      wskaznik = names(x)[i],
                      x[[i]][, !grepl("^lu", names(x[[i]]))],
@@ -159,7 +159,7 @@ zapisz_wskazniki_ewd = function(
     message(" Wczytywanie do tablicy 'wartosci_wskaznikow'.",
             format(Sys.time(), " (%Y.%m.%d, %H:%M:%S)"))
     idWw = .sqlQuery(P, "SELECT max(id_ww) FROM wartosci_wskaznikow")[1, 1]
-    wartosci_wskaznikow$id_ww = 1:nrow(wartosci_wskaznikow) + idWw
+    wartosci_wskaznikow$id_ww = seq_len(nrow(wartosci_wskaznikow)) + idWw
     w = .sqlQuery(P, uloz_insert_z_ramki("wartosci_wskaznikow", wartosci_wskaznikow),
                    wartosci_wskaznikow)
     message(" Wczytywanie do tablicy 'liczba_zdajacych'.",

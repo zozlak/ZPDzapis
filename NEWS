@@ -1,4 +1,38 @@
 --------------------
+Zmiany w ZPDzapis 0.7.1 (10.12.2023)
+
+Ulepszenia:
+- tworzenie sekwencji przepisano z operatora `:` na funkcje seq_len()
+  i seq_along(). Efektem ubocznym jest to, że funkcje zapisujące zadziałają
+  zamiast rzucić błędem również w sytuacjach, gdy zapisywane dane są w pewien
+  sposób nietypowe (np. skalowanie, w którym brak wartości parametrów do
+  zapisania).
+- zapisz_skalowanie() wyświetla informację o tym, jak powinno wyglądać polecenie
+  psql zapisujące do bazy wartości oszacowań umiejętności, jeśli wybrano
+  (domyślną opcję), że mają one nie zostać zapisane przez ODBC, a zapisane na
+  dysku.
+
+--------------------
+Zmiany w ZPDzapis 0.7.0 (28.10.2023)
+
+Uaktualnienia:
+- objęto działaniem funkcji stworz_skale_ewd() rok 2023:
+  - oddzielne skale (i, jeśli to konieczne, pseudotesty) tworzone są dla
+    starszej i dla nowszej formuły matury - pierwsze tylko przy wywołaniu
+    z parametrem BK = FALSE, a drugie tylko przy BK = TRUE;
+- domyślną wartość parametry czyRasch w stworz_skale_ewd() zmieniono na FALSE.
+
+--------------------
+Zmiany w ZPDzapis 0.6.0 (11.01.2023)
+
+Nowe funkcjonalności:
+- stworz_skale_ewd() potrafi tworzyć oddzielne skale dla poszczególnych
+  przedmiotów matury oraz łączonych z dwóch lat wyników egzaminu gimnazjalnego
+  dla danego typu szkoły, zgodnie z nowym podejściem do obliczania EWD
+  zaproponowanym przez Bartosza Kondratka;
+- zapisz_skalowanie() potrafi zapisywać do bazy kowariancje elementów skalowania.
+
+--------------------
 Zmiany w ZPDzapis 0.5.3 (29.09.2022)
 
 Uaktualnienia:
