@@ -1,4 +1,18 @@
 --------------------
+Zmiany w ZPDzapis 0.7.1 (10.12.2023)
+
+Ulepszenia:
+- tworzenie sekwencji przepisano z operatora `:` na funkcje seq_len()
+  i seq_along(). Efektem ubocznym jest to, że funkcje zapisujące zadziałają
+  zamiast rzucić błędem również w sytuacjach, gdy zapisywane dane są w pewien
+  sposób nietypowe (np. skalowanie, w którym brak wartości parametrów do
+  zapisania).
+- zapisz_skalowanie() wyświetla informację o tym, jak powinno wyglądać polecenie
+  psql zapisujące do bazy wartości oszacowań umiejętności, jeśli wybrano
+  (domyślną opcję), że mają one nie zostać zapisane przez ODBC, a zapisane na
+  dysku.
+
+--------------------
 Zmiany w ZPDzapis 0.7.0 (28.10.2023)
 
 Uaktualnienia:

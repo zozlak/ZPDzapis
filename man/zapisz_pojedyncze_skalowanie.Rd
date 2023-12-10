@@ -64,7 +64,7 @@ zip) plik csv (w formacie zgodnym z wynikiem działania
 się otwarte połączenie z bazą przy pomocy programu \code{psql} (może być
 on otwarty również spod PgAdmina!) i tam rozpakować, a następnie wczytać do
 bazy wywołując w \code{psql} polecenie
-\code{\copy skalowania_obserwacje FROM 'ścieżka-do-pliku' WITH DELIMITER ',' CSV HEADER NULL AS 'null';}.
+\code{\\copy skalowania_obserwacje FROM 'ścieżka-do-pliku' WITH DELIMITER ',' CSV HEADER NULL AS 'null';}.
 
 Uwaga! Jeśli \code{oszacowaniaDoCopy = TRUE} i \code{nadpisz = TRUE}, to w
 ramach wywołania funkcji usunięte zostaną dotychczasowe wartości tablicy

@@ -106,7 +106,7 @@ zapisz_skalowanie = function(
 #' się otwarte połączenie z bazą przy pomocy programu \code{psql} (może być
 #' on otwarty również spod PgAdmina!) i tam rozpakować, a następnie wczytać do
 #' bazy wywołując w \code{psql} polecenie
-#' \code{\copy skalowania_obserwacje FROM 'ścieżka-do-pliku' WITH DELIMITER ',' CSV HEADER NULL AS 'null';}.
+#' \code{\\copy skalowania_obserwacje FROM 'ścieżka-do-pliku' WITH DELIMITER ',' CSV HEADER NULL AS 'null';}.
 #'
 #' Uwaga! Jeśli \code{oszacowaniaDoCopy = TRUE} i \code{nadpisz = TRUE}, to w
 #' ramach wywołania funkcji usunięte zostaną dotychczasowe wartości tablicy
@@ -146,7 +146,7 @@ zapisz_pojedyncze_skalowanie = function(
 
   # sprawdzanie, czy we wszystkich elementach mamy to samo skalowanie
   message("  Kontrola poprawności argumentów.")
-  for (i in 1:length(x)) {
+  for (i in seq_along(x)) {
     if (names(x)[i] %in% c("usunieteKryteria", "odsUtraconejWariancji",
                            "skalowania_elementy_kowariancje") |
         is.null(x[[i]])) {
@@ -340,7 +340,7 @@ zapisz_pojedyncze_skalowanie = function(
   if (is.data.frame(x$skalowania_elementy)) {
     message("  Zapis wartości parametrów modelu.")
     idElementu = .sqlQuery(P, "SELECT max(id_elementu) FROM skalowania_elementy")[1, 1]
-    x$skalowania_elementy$id_elementu = 1:nrow(x$skalowania_elementy) + idElementu
+    x$skalowania_elementy$id_elementu = seq_len(nrow(x$skalowania_elementy)) + idElementu
 
     x$skalowania_elementy$grupowy[x$skalowania_elementy$grupowy %in% FALSE] = NA
     x$skalowania_elementy$parametr[x$skalowania_elementy$parametr %in% "dyskryminacja"] = "a"
@@ -406,7 +406,7 @@ zapisz_pojedyncze_skalowanie = function(
     message("  Zapis oszacowań umiejętności.")
     if (proba > 0) {
       x$skalowania_obserwacje =
-        x$skalowania_obserwacje[sample(1:nrow(x$skalowania_obserwacje),
+        x$skalowania_obserwacje[sample(seq_len(nrow(x$skalowania_obserwacje)),
                                        min(proba, nrow(x$skalowania_obserwacje))), ]
     }
     if (oszacowaniaDoCopy) {
@@ -417,6 +417,10 @@ zapisz_pojedyncze_skalowanie = function(
       write.csv(x$skalowania_obserwacje, nazwaPliku, row.names = FALSE, na = "null")
       zip(sub("csv$", "zip", nazwaPliku), nazwaPliku)
       file.remove(nazwaPliku)
+      message("   Oszacowania ", nrow(x$skalowania_obserwacje), " zdających zapisano do pliku '",
+              sub("csv$", "zip", nazwaPliku), "'. Aby wczytać je do bazy, rozpakuj archiwum, otwórz psql i użyj polecenia:\n",
+              "     \\copy skalowania_obserwacje FROM '", nazwaPliku,
+              "' WITH DELIMITER ',' CSV HEADER NULL AS 'null';")
     } else {
       w = .sqlQuery(P, uloz_insert_z_ramki("skalowania_obserwacje",
                                             x$skalowania_obserwacje),
