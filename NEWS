@@ -1,4 +1,17 @@
 --------------------
+Zmiany w ZPDzapis 0.7.2 (25.09.2024)
+
+Uaktualnienia:
+- objęto działaniem funkcji stworz_skale_ewd() rok 2024.
+- uzupełniono mapowanie skal na opisy testów dla egazminu ósmoklasisty.
+
+Naprawione błędy:
+- sprawdzanie przez stworz_skale_ewd() warunku, czy skala składa się z kilku
+  różnych części egzaminu odnosi się teraz wprost do tego faktu, zamiast
+  bazować na heurystyce liczby wierszy, która nie jest poprawna w sytuacji,
+  kiedy skala obejmuje wyniki z więcej niż jednego roku.
+
+--------------------
 Zmiany w ZPDzapis 0.7.1 (10.12.2023)
 
 Ulepszenia:
@@ -7,10 +20,10 @@ Ulepszenia:
   zamiast rzucić błędem również w sytuacjach, gdy zapisywane dane są w pewien
   sposób nietypowe (np. skalowanie, w którym brak wartości parametrów do
   zapisania).
-- zapisz_skalowanie() wyświetla informację o tym, jak powinno wyglądać polecenie
-  psql zapisujące do bazy wartości oszacowań umiejętności, jeśli wybrano
-  (domyślną opcję), że mają one nie zostać zapisane przez ODBC, a zapisane na
-  dysku.
+- zapisazy wartości oszacowań umiejętności, jeśli wybrano
+  (domyślną) opcję, że mają one nie zostać zapisane przez ODBC, a zapisane na
+  dysku.z_skalowanie() wyświetla informację o tym, jak powinno wyglądać polecenie
+  psql zapisujące do b
 
 --------------------
 Zmiany w ZPDzapis 0.7.0 (28.10.2023)
@@ -20,7 +33,7 @@ Uaktualnienia:
   - oddzielne skale (i, jeśli to konieczne, pseudotesty) tworzone są dla
     starszej i dla nowszej formuły matury - pierwsze tylko przy wywołaniu
     z parametrem BK = FALSE, a drugie tylko przy BK = TRUE;
-- domyślną wartość parametry czyRasch w stworz_skale_ewd() zmieniono na FALSE.
+- domyślną wartość parametru czyRasch w stworz_skale_ewd() zmieniono na FALSE.
 
 --------------------
 Zmiany w ZPDzapis 0.6.0 (11.01.2023)

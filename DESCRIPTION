@@ -1,6 +1,6 @@
 Package: ZPDzapis
 Title: Funkcje zapisu danych do bazy ZPD
-Version: 0.7.1
+Version: 0.7.2
 Authors@R: c(
   person("Mateusz", "Zoltak", , "zozlak@zozlak.org", role = c("aut", "cre")),
   person("Grzegorz", "Golonka", , "ggolonka@o2.pl", role = c("aut")),
@@ -16,5 +16,4 @@ Suggests:
 License: MIT + file LICENSE
 LazyData: true
 Encoding: UTF-8
-VignetteBuilder: knitr
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2

@@ -29,7 +29,7 @@
 #' @return wektor liczbowy zawierający id_skali utworzonych skal
 #' @export
 #' @importFrom stats setNames
-#' @importFrom dplyr  %>% .data filter select
+#' @importFrom dplyr  %>% .data filter n_distinct select
 stworz_skale_ewd = function(
   P,
   rodzajEgzaminu = c("sprawdzian", "egzamin gimnazjalny", "matura",
@@ -48,7 +48,7 @@ stworz_skale_ewd = function(
             all(BK %in% c(TRUE, FALSE))      , length(BK) == 1
   )
   stopifnot(BK == FALSE || rodzajEgzaminu == "matura")
-  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2023)
+  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2024)
   rodzajEgzaminu = match.arg(rodzajEgzaminu)
   if (BK && czyRasch) {
     warning("Argument `BK=TRUE`, więc argument `czyRasch=TRUE zostanie zignorowany (tj. nie zostaną utworzone skale raschowe).` ")
@@ -212,7 +212,14 @@ stworz_skale_ewd = function(
           "ewd;e8mLO" = list(czesci = "matematyka",
                              lata = (rok - 4L):(rok - 5L)),
           "ewd;e8jaLO" = list(czesci = "j. angielski",
-                              lata = (rok - 4L):(rok - 5L))
+                              lata = (rok - 4L):(rok - 5L)),
+          # skale do przeprowadzenia procedury łączenia kryteriów
+          "ewd;e8jp" = list(czesci = "j. polski",
+                            lata = rok - 4L),
+          "ewd;e8m" = list(czesci = "matematyka",
+                           lata = rok - 4L),
+          "ewd;e8ja" = list(czesci = "j. angielski",
+                            lata = rok - 4L)
         ))
     }
     if (rok <= 2023) {
@@ -288,6 +295,15 @@ stworz_skale_ewd = function(
     "ghT"  = c("humanistyczna", "humanistyczna"),
     "gmLO" = c("matematyczno-przyrodnicza", "matematyczno-przyrodnicza"),
     "gmT"  = c("matematyczno-przyrodnicza", "matematyczno-przyrodnicza"),
+    "e8jp" = c("polski", NA_character_),
+    "e8jpLO" = c("polski", NA_character_),
+    "e8jpT"  = c("polski", NA_character_),
+    "e8m" = c("matematyka", NA_character_),
+    "e8mLO" = c("matematyka", NA_character_),
+    "e8mT"  = c("matematyka", NA_character_),
+    "e8ja" = c("angielski", NA_character_),
+    "e8jaLO" = c("angielski", NA_character_),
+    "e8jaT"  = c("angielski", NA_character_),
     "m_h"  = c("humanistyczna", NA_character_),
     "m_jp" = c("polski", NA_character_),
     "m_m"  = c("matematyka", NA_character_),
@@ -393,7 +409,7 @@ stworz_skale_ewd = function(
     kryteria = .sqlQuery(P, zapytanie, idTestow)
     kryteria = kryteria[!duplicated(kryteria$id_kryterium), ]
     # ewentualne tworzenie nowego testu (jeśli skala obejmuje wiele części egzaminu)
-    if (nrow(skale[[i]]) > 1) {
+    if (n_distinct(skale[[i]]$czesc_egzaminu) > 1) {
       rodzajEgzaminuSkala = unique(skale[[i]]$rodzaj_egzaminu)
       lata = sort(unique(skale[[i]]$rok), decreasing = TRUE)
       opisyTestow = paste(rodzajEgzaminuSkala, testyMapa[testy[i]][[1]][1],
