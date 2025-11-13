@@ -1,4 +1,10 @@
 --------------------
+Zmiany w ZPDzapis 0.7.3 (13.11.2025)
+
+Uaktualnienia:
+- objęto działaniem funkcji stworz_skale_ewd() rok 2025.
+
+--------------------
 Zmiany w ZPDzapis 0.7.2 (25.09.2024)
 
 Uaktualnienia:
@@ -20,10 +26,10 @@ Ulepszenia:
   zamiast rzucić błędem również w sytuacjach, gdy zapisywane dane są w pewien
   sposób nietypowe (np. skalowanie, w którym brak wartości parametrów do
   zapisania).
-- zapisazy wartości oszacowań umiejętności, jeśli wybrano
+- zapisz_skalowanie() wyświetla informację o tym, jak powinno wyglądać polecenie
+  psql zapisujące do bazy wartości oszacowań umiejętności, jeśli wybrano
   (domyślną) opcję, że mają one nie zostać zapisane przez ODBC, a zapisane na
-  dysku.z_skalowanie() wyświetla informację o tym, jak powinno wyglądać polecenie
-  psql zapisujące do b
+  dysku.
 
 --------------------
 Zmiany w ZPDzapis 0.7.0 (28.10.2023)

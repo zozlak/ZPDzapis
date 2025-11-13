@@ -48,7 +48,7 @@ stworz_skale_ewd = function(
             all(BK %in% c(TRUE, FALSE))      , length(BK) == 1
   )
   stopifnot(BK == FALSE || rodzajEgzaminu == "matura")
-  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2024)
+  stopifnot(all(as.integer(rok) == rok), rok >= 2002, rok <= 2025)
   rodzajEgzaminu = match.arg(rodzajEgzaminu)
   if (BK && czyRasch) {
     warning("Argument `BK=TRUE`, więc argument `czyRasch=TRUE zostanie zignorowany (tj. nie zostaną utworzone skale raschowe).` ")
